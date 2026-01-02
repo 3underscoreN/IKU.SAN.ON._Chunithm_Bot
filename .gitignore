@@ -1,0 +1,11 @@
+# Virtual environment
+.venv/
+
+# browser state data
+_state.json
+
+# .env
+.env
+
+# Python cache
+__pycache__/
