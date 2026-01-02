@@ -124,6 +124,9 @@ def get_team_scores() -> OrderedDict[str, int]:
       _wait_random(0.4, 1.0)
       page.locator('li.submenu_member').click()
 
+      # Ensure the team member profile boxes are visible
+      time.sleep(2)
+
     # obtain html content
     html_content = page.content()
 
