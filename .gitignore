@@ -9,3 +9,9 @@ _state.json
 
 # Python cache
 __pycache__/
+
+# logs
+*.log
+
+# database
+bot.db
