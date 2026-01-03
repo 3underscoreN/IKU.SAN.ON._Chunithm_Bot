@@ -12,6 +12,9 @@ class BoostDayProposal:
     updated_at: datetime
     id: int = None
 
+    def __lt__(self, other: "BoostDayProposal") -> bool:
+        return self.target_date < other.target_date
+
 
 @dataclass
 class BoostDayVote:
