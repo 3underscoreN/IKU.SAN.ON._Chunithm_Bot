@@ -5,9 +5,9 @@ from typing import Iterable
 def error_embed(title: str, description: str) -> discord.Embed:
     """Create a standardized error embed."""
     embed = discord.Embed(
-        title = title,
-        description = description,
-        color = discord.Color.red()
+        title=title,
+        description=description,
+        color=discord.Color.red()
     )
     return embed
 
@@ -30,12 +30,20 @@ def info_embed(
     :rtype: discord.Embed
     """
     embed = discord.Embed(
-        title = title,
-        description = description,
-        color = color
+        title=title,
+        description=description,
+        color=color
     )
 
     for name, value, isInline in fields:
-        embed.add_field(name = name, value = value, inline = isInline)
+        embed.add_field(name=name, value=value, inline=isInline)
+    return embed
 
+def warning_embed(title: str, description: str) -> discord.Embed:
+    """Create a standardized warning embed."""
+    embed = discord.Embed(
+        title=title,
+        description=description,
+        color=discord.Color.orange()
+    )
     return embed
