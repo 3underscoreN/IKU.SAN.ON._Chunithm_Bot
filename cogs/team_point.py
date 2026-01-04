@@ -8,6 +8,8 @@ from exceptions import team_point_exceptions
 
 from utils.embed import error_embed, info_embed, warning_embed
 
+import datetime
+
 import json
 
 import asyncio
@@ -47,7 +49,7 @@ class TeamPointCog(commands.Cog):
 
   async def get_nullify_channel_message(self):
     channel = self.bot.get_channel(self.channel_id) if self.channel_id else None
-    message = await channel.fetch_message(self.msg_id) if channel and self.msg_id else None
+    message = await channel.fetch_message(self.msg_id) if channel and channel.fetch_message and self.msg_id else None
 
     if channel is None or message is None:
       self.channel_id = None
@@ -58,22 +60,22 @@ class TeamPointCog(commands.Cog):
 
   async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
     """Global error handler for app commands in this cog."""
-    isHandled = False
+    is_handled = False
 
     if isinstance(error, team_point_exceptions.TeamPointError):
       title = '❌ 錯誤'
 
-      isHandled = True
+      is_handled = True
       embed = error_embed(
         title=title,
         description=error.args[0].get('message'),
       )
       await interaction.response.send_message(embed=embed, ephemeral=True)
 
-    if not isHandled:
+    if not is_handled:
       raise error
     
-  @tasks.loop(time = discord.utils.utcnow().replace(hour=22, minute=15, second=0, microsecond=0).time())
+  @tasks.loop(time=datetime.time(hours=7, minutes=15, seconds=0, tzinfo=datetime.timezone(offset=datetime.timedelta(hours=9))))
   async def update_team_points(self):
     """Periodically fetches and updates the team point message."""
     logger.info("Started updating team points...")
@@ -95,7 +97,7 @@ class TeamPointCog(commands.Cog):
 
     embed = info_embed(
       title="最新團隊積分排行榜",
-      description=f"=== 每天06:15更新一次 | 最後更新：<t:{int(discord.utils.utcnow().timestamp())}:F> ===",
+      description=f"=== 每天07:15 JST更新一次 | 最後更新：<t:{int(discord.utils.utcnow().timestamp())}:F> ===",
       fields=[(player, f"{score} 分", False) for player, score in team_scores.items()]
     )
 
@@ -128,20 +130,18 @@ class TeamPointCog(commands.Cog):
     if self.channel_id == channel.id:
       raise team_point_exceptions.SameChannelException()
 
-    isConfirmed = False
-
     if (self.channel_id is not None) and (self.msg_id is not None):
       # confirm if want to overwrite
-      channel, _ = await self.get_nullify_channel_message()
-      isConfirmed = await self.confirm_overwrite_tp_msg(interaction)
-      if not isConfirmed:
+      existing_channel, _ = await self.get_nullify_channel_message()
+      if not await self.confirm_overwrite_tp_msg(interaction):
         embed = info_embed(
           title='❎ 已取消覆寫團隊積分訊息位置',
-          description=f'團隊積分訊息仍然發送至 {channel.mention} 。'
+          description=f'團隊積分訊息仍然發送至 {existing_channel.mention} 。'
         )
         try:
           await interaction.edit_original_response(embed=embed, view=None)
         except discord.NotFound:
+          # original response deleted, this is not very critical and can be ignored
           pass
         return
 
@@ -160,7 +160,7 @@ class TeamPointCog(commands.Cog):
       title='✅ 已設定團隊積分訊息位置',
       description=f'團隊積分訊息將會發送至 {channel.mention} 。'
     )
-    if not isConfirmed:
+    if not interaction.response.is_done():
       await interaction.response.send_message(embed=embed)
     else:
       await interaction.edit_original_response(embed=embed, view=None)
@@ -176,7 +176,7 @@ class TeamPointCog(commands.Cog):
     channel, _ = await self.get_nullify_channel_message()
     embed = warning_embed(
       title='⚠️ 確定要覆寫團隊積分訊息位置嗎？',
-      description=f'目前團隊積分訊息頻道已設置為 {channel.mention} 。確定要覆寫嗎？\n如不覆寫，請無需操作。',
+      description=f'目前團隊積分訊息頻道已設置為 {channel.mention if channel else "Unknown"} 。確定要覆寫嗎？\n如不覆寫，請無需操作。',
     )
     view = discord.ui.View(timeout=60.0)
     view.add_item(discord.ui.Button(

@@ -19,7 +19,7 @@ def is_month_key_format(input: str) -> bool:
     """Check if the input string is in 'YYYY-MM' format."""
     try:
         year, month = map(int, input.split('-'))
-        if (1000 <= year <= 9999) and (1 <= month and month <= 12):
+        if (1000 <= year and year <= 9999) and (1 <= month and month <= 12):
             return True
         return False
     except ValueError:
