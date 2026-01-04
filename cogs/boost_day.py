@@ -18,7 +18,7 @@ import logging
 CUT_OFF_DAY = 15  # Mid-month cutoff for current-month proposals.
 logger = logging.getLogger(__name__)
 
-class BoostDayCog(commands.Cog):
+class BoostDayCog(commands.GroupCog, name='boostday'):
   def __init__(self, bot: commands.Bot):
     self.bot = bot
 
@@ -57,7 +57,7 @@ class BoostDayCog(commands.Cog):
         await interaction.edit_original_response(embed=embed, view=None)
 
   @app_commands.command(
-    name='提案加成日',
+    name='propose',
     description='提案本月或下月的加成日。'
   )
   @app_commands.rename(target_date="日期")
@@ -94,7 +94,7 @@ class BoostDayCog(commands.Cog):
       raise boost_day_exceptions.DuplicateProposalException()
 
   @app_commands.command(
-    name='我的加成日提案',
+    name='view_self',
     description='查看自己在指定月份的所有加成日提案 。'
   )
   @app_commands.rename(month="月份")
@@ -126,7 +126,7 @@ class BoostDayCog(commands.Cog):
     await interaction.response.send_message(embed=embed, ephemeral=True)
     
   @app_commands.command(
-    name='所有加成日提案',
+    name='view_all',
     description='查看指定月份的所有加成日提案 。'
   )
   @app_commands.rename(month="月份")

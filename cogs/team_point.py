@@ -37,7 +37,7 @@ def _save_state(tp_msg_channel_id: int | None, tp_msg_msg_id: int | None):
       'tp_msg_msg_id': tp_msg_msg_id
     }, f)
 
-class TeamPointCog(commands.Cog):
+class TeamPointCog(commands.GroupCog, name='teampoint'):
   def __init__(self, bot: commands.Bot):
     self.bot = bot
 
@@ -113,7 +113,7 @@ class TeamPointCog(commands.Cog):
     sum_scores = sum(team_scores.values())
 
     embed = info_embed(
-      title="最新團隊積分排行榜",
+      title="團隊積分排行榜",
       description=f"=== 每天07:15 JST更新一次 | 最後更新：<t:{int(discord.utils.utcnow().timestamp())}:F> ===",
       fields=[(player, f"{score} 分", False) for player, score in team_scores.items()]
     )
@@ -132,7 +132,7 @@ class TeamPointCog(commands.Cog):
     logger.info("Team points update task completed.")
     
     
-  @app_commands.command(name='更新團隊積分', description='立即更新團隊積分訊息。')
+  @app_commands.command(name='update', description='立即更新團隊積分訊息。')
   async def update_now(self, interaction: discord.Interaction):
     """Immediately updates the team point message."""
     if not self.msg_id or not self.channel_id:
@@ -145,7 +145,7 @@ class TeamPointCog(commands.Cog):
     await self.update_team_points()
 
 
-  @app_commands.command(name='設定團隊積分', description='設定或更新團隊積分訊息的位置。')
+  @app_commands.command(name='set_channel', description='設定或更新團隊積分訊息的位置。')
   @app_commands.rename(channel='頻道')
   @app_commands.describe(channel='要發送團隊積分訊息的頻道')
   async def set_team_point_msg(self, interaction: discord.Interaction, channel: discord.TextChannel):
