@@ -87,7 +87,7 @@ class BoostDayCog(commands.Cog):
     target_key = (parsed.year, parsed.month)
 
     if target_key not in (current_month_key, next_month_key):
-      raise boost_day_exceptions.InvalidMonthFormatException()
+      raise boost_day_exceptions.MonthOutOfRangeException()
     
     if today.day > CUT_OFF_DAY and target_key == current_month_key:
       raise boost_day_exceptions.RegistrationClosedException()
