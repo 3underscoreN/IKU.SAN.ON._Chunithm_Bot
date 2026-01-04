@@ -6,6 +6,9 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from cogs.boost_day import add as boost_day_setup
+from cogs.team_point import add as team_point_setup
+
+from utils.embed import error_embed
 
 import sqlite3
 
@@ -31,6 +34,7 @@ class ChunithmBot(commands.Bot):
 
         # Load cogs.
         await boost_day_setup(self)
+        await team_point_setup(self)
 
         # Sync application (slash) commands on startup.
         await self.tree.sync()
@@ -45,6 +49,18 @@ async def on_ready():
 @bot.tree.command(name="hello", description="Say hello")
 async def hello(interaction: discord.Interaction):
     await interaction.response.send_message(f"Hello {interaction.user.mention}!")
+
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+    """Global error handler for app commands."""
+   
+    logging.error(f"Unhandled app command error: {error}", exc_info=error)
+    embed = error_embed(
+        title="❌ 錯誤",
+        description="發生未預期的錯誤。請稍後再試，或聯絡機器人管理員。",
+    )
+    embed.add_field(name="錯誤詳情", value=str(error), inline=False)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
