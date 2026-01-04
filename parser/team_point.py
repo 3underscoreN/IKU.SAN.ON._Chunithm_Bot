@@ -3,7 +3,7 @@ from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 
 import asyncio
 
-import time, random
+import random
 
 import os
 
@@ -60,9 +60,9 @@ async def get_team_scores() -> OrderedDict[str, int]:
   """
 
   # Determine if a state file exists
-  isStateFileExists = False
+  is_state_file_exists = False
   if os.path.exists(STATE_FILE):
-    isStateFileExists = True
+    is_state_file_exists = True
 
   username: Optional[str] = cfg.get('PARSER_SEGA_ID')
   password: Optional[str] = cfg.get('PARSER_SEGA_PW')
@@ -73,7 +73,7 @@ async def get_team_scores() -> OrderedDict[str, int]:
   async with async_playwright() as ap:
 
     browser = await ap.chromium.launch(headless=True)
-    context = await browser.new_context(storage_state=STATE_FILE if isStateFileExists else None)
+    context = await browser.new_context(storage_state=STATE_FILE if is_state_file_exists else None)
     page = await context.new_page()
     # Navigate to the team member page
     await page.goto(TEAM_MEMBER_URL)

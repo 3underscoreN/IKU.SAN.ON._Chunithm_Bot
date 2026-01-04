@@ -18,6 +18,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from typing import Optional
+
 STATE_FILE = 'data/_team_points_state.json'
 
 def _load_state():
@@ -39,8 +41,8 @@ class TeamPointCog(commands.Cog):
     self.bot = bot
 
     states = _load_state()
-    self.channel_id: int = states.get('tp_msg_channel', None)
-    self.msg_id: int = states.get('tp_msg_msg_id', None)
+    self.channel_id: Optional[int] = states.get('tp_msg_channel', None)
+    self.msg_id: Optional[int] = states.get('tp_msg_msg_id', None)
 
     self.update_team_points.start()
 
