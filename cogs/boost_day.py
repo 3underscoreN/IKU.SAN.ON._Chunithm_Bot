@@ -155,7 +155,7 @@ class BoostDayCog(commands.Cog):
       # Build a list of all proposals
       proposal_list = "\n".join([
         f"• **{p.target_date.isoformat()}** (提出者: <@{p.user_id}>)"
-        for p in proposals
+        for p in sorted(proposals, key = lambda x: x.target_date)
       ])
       
       embed = info_embed(
