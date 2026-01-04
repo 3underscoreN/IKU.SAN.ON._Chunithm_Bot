@@ -77,7 +77,7 @@ class TeamPointCog(commands.Cog):
     if not is_handled:
       raise error
     
-  @tasks.loop(time=datetime.time(hours=7, minutes=15, seconds=0, tzinfo=datetime.timezone(offset=datetime.timedelta(hours=9))))
+  @tasks.loop(time=datetime.time(hour=7, minute=15, second=0, tzinfo=datetime.timezone(offset=datetime.timedelta(hours=9))))
   async def update_team_points(self):
     """Periodically fetches and updates the team point message."""
     logger.info("Started updating team points...")
