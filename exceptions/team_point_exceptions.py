@@ -27,6 +27,10 @@ class MessageForbiddenException(TeamPointError):
     details = "Message forbidden in the specified channel"
     message = "無法在指定的頻道發送或編輯訊息。請確認機器人是否具有適當的權限。"
 
+class MessageNotFoundException(TeamPointError):
+    details = "Team point message not found"
+    message = "找不到團隊積分訊息。請確認訊息是否已被刪除，或重新設定團隊積分訊息的位置。"
+
 class NoTeamPointMessageSetException(TeamPointError):
     details = "No team point message has been set"
     message = "尚未設定團隊積分訊息的位置。請使用 /設定團隊積分訊息 指令來設定。"

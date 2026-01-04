@@ -29,6 +29,7 @@ def _load_state():
   except FileNotFoundError:
     return {}
   
+
 def _save_state(tp_msg_channel_id: int | None, tp_msg_msg_id: int | None):
   with open(STATE_FILE, 'w') as f:
     json.dump({
@@ -46,12 +47,20 @@ class TeamPointCog(commands.Cog):
 
     self.update_team_points.start()
 
+
   def _save_state_to_file(self):
     _save_state(self.channel_id, self.msg_id)
 
+
   async def get_nullify_channel_message(self):
     channel = self.bot.get_channel(self.channel_id) if self.channel_id else None
-    message = await channel.fetch_message(self.msg_id) if channel and channel.fetch_message and self.msg_id else None
+    message = None
+    try:
+      if channel and channel.fetch_message and self.msg_id:
+        message = await channel.fetch_message(self.msg_id)
+    except (discord.NotFound, discord.Forbidden):
+      # Message not found or bot has no access
+      pass
 
     if channel is None or message is None:
       self.channel_id = None
@@ -59,6 +68,7 @@ class TeamPointCog(commands.Cog):
       self._save_state_to_file()
 
     return channel, message
+
 
   async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
     """Global error handler for app commands in this cog."""
@@ -72,11 +82,16 @@ class TeamPointCog(commands.Cog):
         title=title,
         description=error.args[0].get('message'),
       )
-      await interaction.response.send_message(embed=embed, ephemeral=True)
-
+    
     if not is_handled:
       raise error
+    else:
+      if not interaction.response.is_done():
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+      else:
+        await interaction.edit_original_response(embed=embed, view=None)
     
+
   @tasks.loop(time=datetime.time(hour=7, minute=15, second=0, tzinfo=datetime.timezone(offset=datetime.timedelta(hours=9))))
   async def update_team_points(self):
     """Periodically fetches and updates the team point message."""
@@ -116,14 +131,19 @@ class TeamPointCog(commands.Cog):
 
     logger.info("Team points update task completed.")
     
+    
   @app_commands.command(name='更新團隊積分', description='立即更新團隊積分訊息。')
   async def update_now(self, interaction: discord.Interaction):
     """Immediately updates the team point message."""
     if not self.msg_id or not self.channel_id:
       raise team_point_exceptions.NoTeamPointMessageSetException()
+  
+    if None in (await self.get_nullify_channel_message()):
+      raise team_point_exceptions.MessageNotFoundException()
     
     await interaction.response.send_message("已觸發團隊積分更新。請稍後片刻後查看。", ephemeral=True)
     await self.update_team_points()
+
 
   @app_commands.command(name='設定團隊積分', description='設定或更新團隊積分訊息的位置。')
   @app_commands.rename(channel='頻道')
@@ -167,6 +187,7 @@ class TeamPointCog(commands.Cog):
     else:
       await interaction.edit_original_response(embed=embed, view=None)
 
+
   async def confirm_overwrite_tp_msg(self, interaction: discord.Interaction) -> bool:
     """Asks the user to confirm overwriting the existing team point message location.
     Sends a confirmation prompt via `discord.Interaction.response.send_message` and waits for the user's response.
@@ -197,6 +218,7 @@ class TeamPointCog(commands.Cog):
       return True
     except asyncio.TimeoutError:
       return False
+
 
 async def add(bot: commands.Bot):
   cog = TeamPointCog(bot)

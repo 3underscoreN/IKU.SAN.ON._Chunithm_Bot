@@ -42,27 +42,19 @@ class BoostDayCog(commands.Cog):
     isHandled = False
 
     if isinstance(error, boost_day_exceptions.BaseBoostDayError):
-      # User-induced error
       embed = error_embed(
         title=title,
         description=error.args[0].get("message", "執行指令時發生錯誤，請檢查輸入並重試。")
       )
       isHandled = True
-        
-    # base case
-    else:
-      embed = error_embed(
-        title=title,
-        description="執行指令時發生未知錯誤，請稍後再試。"
-      )
 
-    await interaction.response.send_message(
-      embed=embed,
-      ephemeral=True,
-    )
     if not isHandled:
-      logger.error(f"Uncaught app command error: {error}")
       raise error
+    else:
+      if not interaction.response.is_done():
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+      else:
+        await interaction.edit_original_response(embed=embed, view=None)
 
   @app_commands.command(
     name='提案加成日',
