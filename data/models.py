@@ -31,11 +31,4 @@ class BoostDayState:
     updated_at: datetime
     winning_date: date = None
     id: int = None
-
-
-@dataclass
-class Player:
-    card_name: str
-
-
     
