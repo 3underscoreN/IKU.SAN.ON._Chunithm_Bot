@@ -12,10 +12,6 @@ class BoostDayProposal:
     updated_at: datetime
     id: int = None
 
-    def __lt__(self, other: "BoostDayProposal") -> bool:
-        return self.target_date < other.target_date
-
-
 @dataclass
 class BoostDayVote:
     """Represents a user's vote during boost day voting period."""
@@ -35,3 +31,11 @@ class BoostDayState:
     updated_at: datetime
     winning_date: date = None
     id: int = None
+
+
+@dataclass
+class Player:
+    card_name: str
+
+
+    
