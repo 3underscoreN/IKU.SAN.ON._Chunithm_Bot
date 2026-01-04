@@ -44,32 +44,32 @@ class BoostDayCog(commands.Cog):
     if isinstance(error, boost_day_exceptions.BaseBoostDayError):
       # User-induced error
       embed = error_embed(
-        title = title,
-        description = error.args[0].get("message", "執行指令時發生錯誤，請檢查輸入並重試。")
+        title=title,
+        description=error.args[0].get("message", "執行指令時發生錯誤，請檢查輸入並重試。")
       )
       isHandled = True
         
     # base case
     else:
       embed = error_embed(
-        title = title,
-        description = "執行指令時發生未知錯誤，請稍後再試。"
+        title=title,
+        description="執行指令時發生未知錯誤，請稍後再試。"
       )
 
     await interaction.response.send_message(
-      embed = embed,
-      ephemeral = True,
+      embed=embed,
+      ephemeral=True,
     )
     if not isHandled:
       logger.error(f"Uncaught app command error: {error}")
       raise error
 
   @app_commands.command(
-    name = '提案加成日',
-    description = '提案本月或下月的加成日。'
+    name='提案加成日',
+    description='提案本月或下月的加成日。'
   )
-  @app_commands.rename(target_date = "日期")
-  @app_commands.describe(target_date = "目標日期，格式為 YYYY-MM-DD")
+  @app_commands.rename(target_date="日期")
+  @app_commands.describe(target_date="目標日期，格式為 YYYY-MM-DD")
   async def boost_day_propose(self, interaction: discord.Interaction, target_date: str):
 
     today = date.today()
@@ -102,11 +102,11 @@ class BoostDayCog(commands.Cog):
       raise boost_day_exceptions.DuplicateProposalException()
 
   @app_commands.command(
-    name = '我的加成日提案',
-    description = '查看自己在指定月份的所有加成日提案 。'
+    name='我的加成日提案',
+    description='查看自己在指定月份的所有加成日提案 。'
   )
-  @app_commands.rename(month = "月份")
-  @app_commands.describe(month = "欲查詢的月份，格式為 YYYY-MM，預設為本月")
+  @app_commands.rename(month="月份")
+  @app_commands.describe(month="欲查詢的月份，格式為 YYYY-MM，預設為本月")
   async def my_boost_proposals(self, interaction: discord.Interaction, month: str = None):
     month_key = await self.month_key_parser(month)
 
@@ -114,9 +114,9 @@ class BoostDayCog(commands.Cog):
 
     if not proposals:
       embed = info_embed(
-        title = "沒有加成日提案",
-        description = f"您在 {month_key} 沒有任何加成日提案。",
-        color = discord.Color.blue()
+        title="沒有加成日提案",
+        description=f"您在 {month_key} 沒有任何加成日提案。",
+        color=discord.Color.blue()
       )
     else:
       proposal_list = "\n".join([
@@ -124,22 +124,21 @@ class BoostDayCog(commands.Cog):
         for p in sorted(proposals)
       ])
       embed = info_embed(
-          title = f"你的加成日提案：{month_key}",
-          color = discord.Color.blue(),
-          fields = [
-
+          title=f"你的加成日提案：{month_key}",
+          color=discord.Color.blue(),
+          fields=[
             ("提案列表", proposal_list, False)
           ]
       )
     
-    await interaction.response.send_message(embed = embed, ephemeral = True)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
     
   @app_commands.command(
-    name = '所有加成日提案',
-    description = '查看指定月份的所有加成日提案 。'
+    name='所有加成日提案',
+    description='查看指定月份的所有加成日提案 。'
   )
-  @app_commands.rename(month = "月份")
-  @app_commands.describe(month = "欲查詢的月份，格式為 YYYY-MM，預設為本月")
+  @app_commands.rename(month="月份")
+  @app_commands.describe(month="欲查詢的月份，格式為 YYYY-MM，預設為本月")
   async def boost_proposals(self, interaction: discord.Interaction, month: str = None):
     month_key = await self.month_key_parser(month)
 
@@ -147,9 +146,9 @@ class BoostDayCog(commands.Cog):
     
     if not proposals:
       embed = info_embed(
-        title = "沒有加成日提案",
-        description = f"{month_key} 沒有任何加成日提案。",
-        color = discord.Color.blue()
+        title="沒有加成日提案",
+        description=f"{month_key} 沒有任何加成日提案。",
+        color=discord.Color.blue()
       )
     else:
       # Build a list of all proposals
@@ -159,13 +158,13 @@ class BoostDayCog(commands.Cog):
       ])
       
       embed = info_embed(
-        title = f"加成日提案一覽：{month_key}",
-        description = proposal_list,
-        color = discord.Color.green()
+        title=f"加成日提案一覽：{month_key}",
+        description=proposal_list,
+        color=discord.Color.green()
       )
       embed.set_footer(text = f"提案總數：{len(proposals)}")
       
-    await interaction.response.send_message(embed = embed, ephemeral = True)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
     
 
 async def add(bot: commands.Bot):
