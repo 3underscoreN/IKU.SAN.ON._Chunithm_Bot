@@ -37,24 +37,20 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
 
   async def cog_app_command_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError) -> None:
     """Global error handler for app commands in this cog."""
-    title = "❌ 錯誤"
 
-    isHandled = False
-
-    if isinstance(error, boost_day_exceptions.BaseBoostDayError):
+    if isinstance(error, boost_day_exceptions.BoostDayError):
       embed = error_embed(
-        title=title,
         description=error.args[0].get("message", "執行指令時發生錯誤，請檢查輸入並重試。")
       )
-      isHandled = True
 
-    if not isHandled:
-      raise error
-    else:
       if not interaction.response.is_done():
         await interaction.response.send_message(embed=embed, ephemeral=True)
       else:
         await interaction.edit_original_response(embed=embed, view=None)
+
+      return
+    
+    raise error  # Propagate to global handler if unhandled.
 
   @app_commands.command(
     name='propose',

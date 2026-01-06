@@ -72,24 +72,18 @@ class TeamPointCog(commands.GroupCog, name='teampoint'):
 
   async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
     """Global error handler for app commands in this cog."""
-    is_handled = False
-
     if isinstance(error, team_point_exceptions.TeamPointError):
-      title = '❌ 錯誤'
-
-      is_handled = True
       embed = error_embed(
-        title=title,
         description=error.args[0].get('message'),
       )
-    
-    if not is_handled:
-      raise error
-    else:
       if not interaction.response.is_done():
         await interaction.response.send_message(embed=embed, ephemeral=True)
       else:
         await interaction.edit_original_response(embed=embed, view=None)
+
+      return
+    
+    raise error  # Propagate to global handler if unhandled.
     
 
   @tasks.loop(time=datetime.time(hour=7, minute=15, second=0, tzinfo=datetime.timezone(offset=datetime.timedelta(hours=9))))
