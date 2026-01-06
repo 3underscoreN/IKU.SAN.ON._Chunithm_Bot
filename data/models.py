@@ -12,7 +12,6 @@ class BoostDayProposal:
     updated_at: datetime
     id: int = None
 
-
 @dataclass
 class BoostDayVote:
     """Represents a user's vote during boost day voting period."""
@@ -32,3 +31,4 @@ class BoostDayState:
     updated_at: datetime
     winning_date: date = None
     id: int = None
+    
