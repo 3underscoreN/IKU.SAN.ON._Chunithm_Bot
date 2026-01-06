@@ -55,12 +55,8 @@ async def hello(interaction: discord.Interaction):
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
     """Global error handler for app commands."""
-    if isinstance(error, (boost_day_exceptions.BoostDayError, team_point_exceptions.TeamPointError)):
-        return # Handled in respective cogs
-
     logging.error(f"Unhandled app command error: {error}", exc_info=error)
     embed = error_embed(
-        title="❌ 錯誤",
         description="發生未預期的錯誤。請稍後再試，或聯絡機器人管理員。",
     )
     embed.add_field(name="錯誤詳情", value=str(error), inline=False)
