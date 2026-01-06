@@ -92,6 +92,7 @@ async def get_team_scores() -> OrderedDict[str, int]:
         # sometimes loading gets stuck for whatever reason, so we retry 1 time here
         logger.warning('Timeout while waiting for page to load after going back from error page. Retrying...')
         await page.reload(timeout=60000, wait_until="networkidle")
+
       if page.locator('li.btn_team').is_visible():
         logger.info('Returned to home page successfully.')
 
@@ -180,6 +181,8 @@ def _parse_team_scores(html: str) -> OrderedDict[str, int]:
   # maximum 20 players in 1 group
   player_divs = soup.find_all('div', class_=player_scores_locator, recursive=True, limit=20)
   
+  # this is sorted by appearance order on the page.
+  # Since SEGA already sorts the values for us, it is sorted as long order is maintained.
   for player_div in player_divs:
     name: str = 'Unknown'
     score: int = 0        # preset values
