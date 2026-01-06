@@ -1,4 +1,4 @@
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, expect
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 
 import asyncio
@@ -118,6 +118,13 @@ async def get_team_scores() -> OrderedDict[str, int]:
 
         logger.info('Login submitted.')
         await _wait_random(0.5, 1.2)
+
+        # Check if login was successful by verifying the URL
+        try:
+          expect(page.locator('li.btn_team')).to_be_visible(timeout=15000)
+          logger.info('Login successful, navigating to team member page.')
+        except PlaywrightTimeoutError:
+          raise Exception('Login failed or took too long. Please check your SEGA ID and password.')
 
       # navigate to team member page again
       await page.locator('li.btn_team').click()
