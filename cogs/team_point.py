@@ -52,23 +52,35 @@ class TeamPointCog(commands.GroupCog, name='teampoint'):
     _save_state(self.channel_id, self.msg_id)
 
 
-  async def get_nullify_channel_message(self):
-    channel = self.bot.get_channel(self.channel_id) if self.channel_id else None
-    message = None
-    try:
-      if channel and channel.fetch_message and self.msg_id:
-        message = await channel.fetch_message(self.msg_id)
-    except (discord.NotFound, discord.Forbidden):
-      # Message not found or bot has no access
-      pass
-
-    if channel is None or message is None:
+  async def get_channel_message(self):
+    def nullify():
       self.channel_id = None
       self.msg_id = None
       self._save_state_to_file()
 
-    return channel, message
+    if self.channel_id is None or self.msg_id is None:
+      nullify()
+      raise team_point_exceptions.NoTeamPointMessageSetException()
 
+
+    channel = self.bot.get_channel(self.channel_id)
+    if channel is None or not isinstance(channel, discord.TextChannel):
+      nullify()
+      raise team_point_exceptions.ChannelNotFoundException()
+
+    message = None
+    try:
+      if channel and channel.fetch_message:
+        message = await channel.fetch_message(self.msg_id)
+    except (discord.NotFound, discord.Forbidden):
+      # Message not found or bot has no access
+      nullify()
+      raise team_point_exceptions.MessageNotFoundException()
+
+    if channel is None or message is None:
+      nullify()
+
+    return channel, message
 
   async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
     """Global error handler for app commands in this cog."""
@@ -91,11 +103,11 @@ class TeamPointCog(commands.GroupCog, name='teampoint'):
     """Periodically fetches and updates the team point message."""
     logger.info("Started updating team points...")
 
-    channel, message = await self.get_nullify_channel_message()
-
-    if not message or not channel:
-      logger.warning("No team point message set or message was deleted. Team point update skipped.")
-      return  # No message set yet / message got deleted for whatever reason
+    try:
+      channel, message = await self.get_channel_message()
+    except team_point_exceptions.TeamPointError as e:
+      logger.warning(f"Cannot update team points due to: {e}")
+      return
 
     try:
       team_scores = await get_team_scores()
@@ -132,7 +144,7 @@ class TeamPointCog(commands.GroupCog, name='teampoint'):
     if not self.msg_id or not self.channel_id:
       raise team_point_exceptions.NoTeamPointMessageSetException()
   
-    if None in (await self.get_nullify_channel_message()):
+    if None in (await self.get_channel_message()):
       raise team_point_exceptions.MessageNotFoundException()
     
     await interaction.response.send_message("已觸發團隊積分更新。請稍後片刻後查看。", ephemeral=True)
@@ -148,7 +160,7 @@ class TeamPointCog(commands.GroupCog, name='teampoint'):
 
     if (self.channel_id is not None) and (self.msg_id is not None):
       # confirm if want to overwrite
-      existing_channel, _ = await self.get_nullify_channel_message()
+      existing_channel, _ = await self.get_channel_message()
       if not await self.confirm_overwrite_tp_msg(interaction):
         embed = info_embed(
           title='❎ 已取消覆寫團隊積分訊息位置',
@@ -190,7 +202,7 @@ class TeamPointCog(commands.GroupCog, name='teampoint'):
     :return: True if the user confirms, False if they cancel or timeout.
     :rtype: bool
     """
-    channel, _ = await self.get_nullify_channel_message()
+    channel, _ = await self.get_channel_message()
     embed = warning_embed(
       title='⚠️ 確定要覆寫團隊積分訊息位置嗎？',
       description=f'目前團隊積分訊息頻道已設置為 {channel.mention if channel else "Unknown"} 。確定要覆寫嗎？\n如不覆寫，請無需操作。',
