@@ -1,6 +1,3 @@
-import logging
-import os
-
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -8,11 +5,10 @@ from dotenv import load_dotenv
 from cogs.boost_day import add as boost_day_setup
 from cogs.team_point import add as team_point_setup
 
-from exceptions import boost_day_exceptions, team_point_exceptions
+import logging
+import os
 
 from utils.embed import error_embed
-
-import sqlite3
 
 from data.db import db
 
