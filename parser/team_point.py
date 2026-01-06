@@ -17,7 +17,7 @@ from typing import Optional
 
 import logging
 
-STATE_FILE = '_parser_state.json'
+STATE_FILE = 'data/_parser_state.json'
 
 CHUNITHM_NET_ENGLISH_URL = 'https://chunithm-net-eng.com/mobile'
 TEAM_MEMBER_URL = f'{CHUNITHM_NET_ENGLISH_URL}/team/teamMember'
