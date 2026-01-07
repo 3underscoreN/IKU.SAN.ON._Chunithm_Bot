@@ -122,7 +122,7 @@ async def get_team_scores() -> OrderedDict[str, int]:
 
         # Check if login was successful by verifying the URL
         try:
-          expect(page.locator('li.btn_team')).to_be_visible(timeout=15000)
+          await expect(page.locator('li.btn_team')).to_be_visible(timeout=15000)
           logger.info('Login successful, navigating to team member page.')
         except PlaywrightTimeoutError:
           raise Exception('Login failed or took too long. Please check your SEGA ID and password.')
