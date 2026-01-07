@@ -37,7 +37,7 @@ class ChunithmBot(commands.Bot):
         await team_point_setup(self)
 
         # Sync application (slash) commands on startup.
-        await self.tree.sync(guild=discord.Object(id=1041206521364758628))
+        await self.tree.sync()
 
 bot = ChunithmBot()
 
