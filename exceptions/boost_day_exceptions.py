@@ -19,7 +19,6 @@ class BoostDayError(BaseBoostDayError):
         }
         super().__init__(payload)
 
-# Now your specific errors become super short and clean:
 class InvalidDateFormatException(BoostDayError):
     details = "Invalid date format"
     message = "日期格式無效。請使用 YYYY-MM-DD。"

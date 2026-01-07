@@ -2,21 +2,23 @@ import discord
 
 from typing import Iterable
 
-def error_embed(title: str, description: str) -> discord.Embed:
+def error_embed(title: str = '❌ 錯誤', description: str = '', **kwargs) -> discord.Embed:
     """Create a standardized error embed."""
     embed = discord.Embed(
         title=title,
         description=description,
-        color=discord.Color.red()
+        color=kwargs.get('color', discord.Color.red()),
+        **kwargs
     )
     return embed
 
 def info_embed(
-        title: str, 
+        title: str = 'ℹ️ 資訊', 
         description: str = '', 
         *,
         color: discord.Color = discord.Color.blue(),
-        fields: Iterable[tuple[str, str, bool]] = ()
+        fields: Iterable[tuple[str, str, bool]] = (),
+        **kwargs
         ) -> discord.Embed:
     """
     Create a standardized info embed.
@@ -32,18 +34,20 @@ def info_embed(
     embed = discord.Embed(
         title=title,
         description=description,
-        color=color
+        color=color,
+        **kwargs
     )
 
     for name, value, is_inlie in fields:
         embed.add_field(name=name, value=value, inline=is_inlie)
     return embed
 
-def warning_embed(title: str, description: str) -> discord.Embed:
+def warning_embed(title: str = '⚠️ 警告', description: str = '', **kwargs) -> discord.Embed:
     """Create a standardized warning embed."""
     embed = discord.Embed(
         title=title,
         description=description,
-        color=discord.Color.orange()
+        color=discord.Color.orange(),
+        **kwargs
     )
     return embed

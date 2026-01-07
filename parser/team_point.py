@@ -1,4 +1,4 @@
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, expect
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 
 import asyncio
@@ -17,7 +17,7 @@ from typing import Optional
 
 import logging
 
-STATE_FILE = '_parser_state.json'
+STATE_FILE = 'data/_parser_state.json'
 
 CHUNITHM_NET_ENGLISH_URL = 'https://chunithm-net-eng.com/mobile'
 TEAM_MEMBER_URL = f'{CHUNITHM_NET_ENGLISH_URL}/team/teamMember'
@@ -92,7 +92,8 @@ async def get_team_scores() -> OrderedDict[str, int]:
         # sometimes loading gets stuck for whatever reason, so we retry 1 time here
         logger.warning('Timeout while waiting for page to load after going back from error page. Retrying...')
         await page.reload(timeout=60000, wait_until="networkidle")
-      if page.url.startswith(HOME_URL):
+
+      if await page.locator('li.btn_team').count() > 0:
         logger.info('Returned to home page successfully.')
 
       else:
@@ -118,6 +119,13 @@ async def get_team_scores() -> OrderedDict[str, int]:
 
         logger.info('Login submitted.')
         await _wait_random(0.5, 1.2)
+
+        # Check if login was successful by verifying the URL
+        try:
+          await expect(page.locator('li.btn_team')).to_be_visible(timeout=15000)
+          logger.info('Login successful, navigating to team member page.')
+        except PlaywrightTimeoutError:
+          raise Exception('Login failed or took too long. Please check your SEGA ID and password.')
 
       # navigate to team member page again
       await page.locator('li.btn_team').click()
@@ -173,6 +181,8 @@ def _parse_team_scores(html: str) -> OrderedDict[str, int]:
   # maximum 20 players in 1 group
   player_divs = soup.find_all('div', class_=player_scores_locator, recursive=True, limit=20)
   
+  # this is sorted by appearance order on the page.
+  # Since SEGA already sorts the values for us, it is sorted as long order is maintained.
   for player_div in player_divs:
     name: str = 'Unknown'
     score: int = 0        # preset values
