@@ -93,7 +93,7 @@ async def get_team_scores() -> OrderedDict[str, int]:
         logger.warning('Timeout while waiting for page to load after going back from error page. Retrying...')
         await page.reload(timeout=60000, wait_until="networkidle")
 
-      if await page.locator('li.btn_team').is_visible():
+      if await page.locator('li.btn_team').count() > 0:
         logger.info('Returned to home page successfully.')
 
       else:
