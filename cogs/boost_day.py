@@ -9,7 +9,7 @@ from utils.embed import error_embed, info_embed
 
 from sqlite3 import IntegrityError as sqlite3IntegrityError
 
-from services.boost_day_service import add_proposal, get_user_proposals, get_month_proposals
+from services.boost_day_service import add_proposal, get_user_proposals, get_month_proposals, remove_proposal
 
 from exceptions import boost_day_exceptions
 
@@ -154,6 +154,56 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
       
     await interaction.response.send_message(embed=embed, ephemeral=True)
     
+  @app_commands.command(
+    name='withdraw',
+    description='撤回本月或下月的加成日提案。'
+  )
+  @app_commands.rename(target_date="日期", month="月份")
+  @app_commands.describe(
+    target_date="欲撤回的日期，格式為 YYYY-MM-DD",
+    month="欲撤回的月份，格式為 YYYY-MM，預設為日期所在月份"
+  )
+  async def withdraw_proposal(self, interaction: discord.Interaction, target_date: str, month: str | None = None):
+    parsed = parse_iso_date(target_date)
+
+    if parsed is None:
+      raise boost_day_exceptions.InvalidDateFormatException()
+
+    target_month_key = f"{parsed.year}-{parsed.month:02d}"
+
+    if month is None:
+      month_key = target_month_key
+    else:
+      month_key = await self.month_key_parser(month)
+      if month_key != target_month_key:
+        raise boost_day_exceptions.MonthOutOfRangeException()
+
+    today = date.today()
+    next_m = next_month(today)
+    allowed_keys = {
+      f"{today.year}-{today.month:02d}",
+      f"{next_m.year}-{next_m.month:02d}"
+    }
+
+    if month_key not in allowed_keys:
+      raise boost_day_exceptions.MonthOutOfRangeException()
+
+    deleted = remove_proposal(interaction.user.id, parsed, month_key)
+
+    if not deleted:
+      raise boost_day_exceptions.ProposalNotFoundException()
+
+    logger.info("User %s withdrew boost day proposal %s", interaction.user.id, parsed.isoformat())
+
+    embed = info_embed(
+      title="✅ 已撤回加成日提案",
+      description=f"已移除您在 {month_key} 的提案：{parsed.isoformat()}。",
+      color=discord.Color.green()
+    )
+
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
 
 async def add(bot: commands.Bot):
   await bot.add_cog(BoostDayCog(bot))

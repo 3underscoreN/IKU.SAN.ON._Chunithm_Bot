@@ -94,6 +94,22 @@ def get_month_proposals(month_key: str) -> list[BoostDayProposal]:
         ]
 
 
+def remove_proposal(user_id: int, target_date: date, month_key: str) -> bool:
+    """Remove a specific proposal for a user in a month.
+
+    Returns True if a row was deleted, False otherwise.
+    """
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM boost_day_proposals WHERE user_id = ? AND target_date = ? AND month_key = ?",
+            (user_id, target_date, month_key),
+        )
+        conn.commit()
+
+        return cursor.rowcount > 0
+
+
 def lock_month(month_key: str) -> BoostDayState:
     """Lock a month for voting (transition from open to voting)."""
     now = datetime.now()
