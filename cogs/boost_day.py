@@ -158,25 +158,17 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
     name='withdraw',
     description='撤回本月或下月的加成日提案。'
   )
-  @app_commands.rename(target_date="日期", month="月份")
+  @app_commands.rename(target_date="日期")
   @app_commands.describe(
     target_date="欲撤回的日期，格式為 YYYY-MM-DD",
-    month="欲撤回的月份，格式為 YYYY-MM，預設為日期所在月份"
   )
-  async def withdraw_proposal(self, interaction: discord.Interaction, target_date: str, month: str | None = None):
+  async def withdraw_proposal(self, interaction: discord.Interaction, target_date: str):
     parsed = parse_iso_date(target_date)
 
     if parsed is None:
       raise boost_day_exceptions.InvalidDateFormatException()
 
-    target_month_key = f"{parsed.year}-{parsed.month:02d}"
-
-    if month is None:
-      month_key = target_month_key
-    else:
-      month_key = await self.month_key_parser(month)
-      if month_key != target_month_key:
-        raise boost_day_exceptions.MonthOutOfRangeException()
+    month_key = f"{parsed.year}-{parsed.month:02d}"
 
     today = date.today()
     next_m = next_month(today)
