@@ -17,17 +17,13 @@ logger = logging.getLogger(__name__)
 
 async def get_team_scores() -> OrderedDict[str, int]:
   """
-  Launches a Playwright browser to log into the Chunithm Net English website,
-  navigates to the team member page, and retrieves the team scores.
-
-  Please note that in order to mimic human behavior and avoid bot detection, this function includes random wait times between actions. 
-  It is a good idea to run this command in an async function.
+  Gets team scores from the CHUNITHM team member page.
 
   :return: An ordered dictionary mapping player names to their scores.
   :rtype: OrderedDict[str, int]
 
   :raises ValueError: If SEGA ID or password (`PARSER_SEGA_ID`, `PARSER_SEGA_PW`) is not found in environment variables.
-  :raises Exception: If there is an error during the login or navigation process.
+  :raises RuntimeError: If there is an error during the login or navigation process.
   """
   async with Navigator(TEAM_MEMBER_URL) as page:
     # obtain html content
