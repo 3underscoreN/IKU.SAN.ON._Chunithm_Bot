@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 from cogs.boost_day import add as boost_day_setup
 from cogs.team_point import add as team_point_setup
+from cogs.team_draw import add as team_draw_setup
 
 from exceptions import boost_day_exceptions, team_point_exceptions
 
@@ -35,6 +36,7 @@ class ChunithmBot(commands.Bot):
         # Load cogs.
         await boost_day_setup(self)
         await team_point_setup(self)
+        await team_draw_setup(self)
 
         # Sync application (slash) commands on startup.
         await self.tree.sync()
