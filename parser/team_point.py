@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 from parser.navigator import Navigator
 
 import json
-from dotenv import dotenv_values
 
 from collections import OrderedDict
 from typing import Optional
@@ -11,13 +10,10 @@ import logging
 
 with open('parser/cfg.json', 'r', encoding='utf-8') as cfg_file:
   user_cfg = json.load(cfg_file)
-
 CHUNITHM_NET_ENGLISH_URL = user_cfg.get('CHUNITHM_NET_ENGLISH_URL_BASE', 'https://chunithm-net-eng.com/mobile')
 TEAM_MEMBER_URL = f'{CHUNITHM_NET_ENGLISH_URL}/team/teamMember'
 
 logger = logging.getLogger(__name__)
-
-env_cfg = dotenv_values()
 
 async def get_team_scores() -> OrderedDict[str, int]:
   """
