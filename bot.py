@@ -6,7 +6,9 @@ from cogs.boost_day import add as boost_day_setup
 from cogs.team_point import add as team_point_setup
 from cogs.team_draw import add as team_draw_setup
 
-from exceptions import boost_day_exceptions, team_point_exceptions
+from exceptions.boost_day_exceptions import BoostDayError
+from exceptions.team_draw_exceptions import TeamDrawError
+from exceptions.team_point_exceptions import TeamPointError
 
 import logging
 import os
@@ -55,7 +57,7 @@ async def hello(interaction: discord.Interaction):
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
     """Global error handler for app commands."""
-    if isinstance(error, (boost_day_exceptions.BoostDayError, team_point_exceptions.TeamPointError)):
+    if isinstance(error, (BoostDayError, TeamDrawError, TeamPointError)):
         return  # Handled in respective cogs
 
     logging.error(f"Unhandled app command error: {error}", exc_info=error)

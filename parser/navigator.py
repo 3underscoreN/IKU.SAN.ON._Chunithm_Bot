@@ -14,7 +14,7 @@ import logging
 
 from typing import Optional, Tuple
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("discord.parser.navigator")
 
 with open('parser/cfg.json', 'r', encoding='utf-8') as cfg_file:
   user_cfg = json.load(cfg_file)
@@ -71,7 +71,7 @@ class Navigator:
 
     # initialize playwright stuff
     self.playwright = await async_playwright().start()
-    self.browser = await self.playwright.chromium.launch(headless=False)
+    self.browser = await self.playwright.chromium.launch(headless=True)
     self.context = await self.browser.new_context(storage_state=state_file if (await is_state_file_exists(state_file)) else None)
     self.page = await self.context.new_page()
 
