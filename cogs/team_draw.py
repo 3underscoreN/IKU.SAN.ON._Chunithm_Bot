@@ -139,11 +139,11 @@ class TeamDrawCog(commands.GroupCog, name='teamdraw'):
         title="🎉 團員抽獎結果 🎉",
       )
       entries = "\n".join([f"{player}: `{score}` 分" for player, score in team_scores.items()])
-      embed.add_field(name="抽獎時間", value=now.strftime('%Y-%m-%d %H:%M:%S %Z'), inline=False)
+      embed.add_field(name="抽獎時間", value=f"<t:{int(now.timestamp())}>", inline=False)
       embed.add_field(name="抽選名單：", value=entries, inline=False)
       embed.add_field(name="恭喜得獎者：", value=f"🎊 **{winner}** 🎊", inline=False)
 
-      await channel.send(embed=embed)
+      await channel.send(embed=embed) # type:ignore 
 
       logger.info('Team draw completed successfully.')
     except Exception as e:
@@ -208,20 +208,6 @@ class TeamDrawCog(commands.GroupCog, name='teamdraw'):
     embed = info_embed(
       description="已取消目前設定的團隊抽選。"
     )
-    await interaction.response.send_message(embed=embed, ephemeral=True)
-
-  @app_commands.command(name="view_task_status", description="查看團隊抽選任務狀態")
-  async def view_task_status(self, interaction: discord.Interaction):
-    if self.start_draw.is_running():
-      next_run = self.start_draw.next_iteration
-      embed = info_embed(
-        description=f"團隊抽選任務正在運行中，下一次執行時間為 {next_run.strftime('%Y-%m-%d %H:%M:%S %Z')}"
-      )
-    else:
-      embed = warning_embed(
-        description="團隊抽選任務目前未在運行中。"
-      )
-    
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def add(bot: commands.Bot):
