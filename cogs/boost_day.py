@@ -68,7 +68,7 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
     propose_url = f"{WEB_URL_BASE}/input/{token}"
     embed = info_embed(
       title="加成日提案鏈接",
-      description=f"點擊以下鏈接前往提案頁面：({token})",
+      description=f"點擊以下鏈接前往提案頁面：{propose_url}",
     )
     embed.add_field(name="提示", value="請在30分鐘内完成提交，否則鏈接將失效。", inline=False)
     await interaction.followup.send(embed=embed, ephemeral=True)
