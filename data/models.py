@@ -12,14 +12,14 @@ class BoostDayProposal:
     updated_at: datetime
     id: int = None
 
-@dataclass
-class BoostDayVote:
-    """Represents a user's vote during boost day voting period."""
-    month_key: str  # Format: "YYYY-MM"
-    user_id: int
-    voted_date: date
-    created_at: datetime
-    id: int = None
+# @dataclass
+# class BoostDayVote:
+#     """Represents a user's vote during boost day voting period."""
+#     month_key: str  # Format: "YYYY-MM"
+#     user_id: int
+#     voted_date: date
+#     created_at: datetime
+#     id: int = None
 
 
 @dataclass
