@@ -15,7 +15,7 @@ import os
 
 from utils.embed import error_embed
 
-from data.db import db
+# from data.db import db
 
 
 load_dotenv()
@@ -33,7 +33,7 @@ class ChunithmBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         # Initialize database on startup.
-        db.init_db()
+        # db.init_db()
 
         # Load cogs.
         await boost_day_setup(self)
