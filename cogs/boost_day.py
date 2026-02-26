@@ -7,13 +7,16 @@ from datetime import date
 from utils.date_utils import parse_iso_date, next_month, is_month_key_format
 from utils.embed import error_embed, info_embed
 
-from sqlite3 import IntegrityError as sqlite3IntegrityError
-
-from services.boost_day_service import add_proposal, get_user_proposals, get_month_proposals, remove_proposal
+from services.web_auth_service import get_token
+from services.boost_day_service import get_user_proposals, get_month_proposals
 
 from exceptions import boost_day_exceptions
 
 import logging
+
+from dotenv import dotenv_values
+
+WEB_URL_BASE = f"{dotenv_values('.env').get('WEB_URL_BASE', 'http://host.docker.internal:3000')}"
 
 CUT_OFF_DAY = 15  # Mid-month cutoff for current-month proposals.
 logger = logging.getLogger(__name__)
@@ -53,41 +56,22 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
     raise error  # Propagate to global handler if unhandled.
 
   @app_commands.command(
-    name='propose',
-    description='提案本月或下月的加成日。'
+    name='get_propose_link',
+    description='獲取提案加成日鏈接。'
   )
-  @app_commands.rename(target_date="日期")
-  @app_commands.describe(target_date="目標日期，格式為 YYYY-MM-DD")
-  async def boost_day_propose(self, interaction: discord.Interaction, target_date: str):
+  async def boost_day_get_propose_link(self, interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    token = await get_token(str(interaction.user.id))
+    if token is None:
+      raise boost_day_exceptions.TokenFetchException()
 
-    today = date.today()
-    parsed = parse_iso_date(target_date)
-
-    if parsed is None:
-      raise boost_day_exceptions.InvalidDateFormatException()
-    
-    if parsed < today:
-      raise boost_day_exceptions.DateInPastException()
-    
-    current_month_key = (today.year, today.month)
-    next_m = next_month(today)
-    next_month_key = (next_m.year, next_m.month)
-    target_key = (parsed.year, parsed.month)
-
-    if target_key not in (current_month_key, next_month_key):
-      raise boost_day_exceptions.MonthOutOfRangeException()
-    
-    if today.day > CUT_OFF_DAY and target_key == current_month_key:
-      raise boost_day_exceptions.RegistrationClosedException()
-    
-    db_month_key = f"{parsed.year}-{parsed.month:02d}"
-    try:
-      add_proposal(interaction.user.id, parsed, db_month_key)
-      await interaction.response.send_message(
-        f"✅ 已成功提案加成日：{parsed.isoformat()}！"
-      )
-    except sqlite3IntegrityError:
-      raise boost_day_exceptions.DuplicateProposalException()
+    propose_url = f"{WEB_URL_BASE}/input/{token}"
+    embed = info_embed(
+      title="加成日提案鏈接",
+      description=f"點擊以下鏈接前往提案頁面：({token})",
+    )
+    embed.add_field(name="提示", value="請在30分鐘内完成提交，否則鏈接將失效。", inline=False)
+    await interaction.followup.send(embed=embed, ephemeral=True)
 
   @app_commands.command(
     name='view_self',
@@ -96,9 +80,11 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
   @app_commands.rename(month="月份")
   @app_commands.describe(month="欲查詢的月份，格式為 YYYY-MM，預設為本月")
   async def my_boost_proposals(self, interaction: discord.Interaction, month: str = None):
-    month_key = await self.month_key_parser(month)
+    await interaction.response.defer(ephemeral=True)
 
-    proposals = get_user_proposals(interaction.user.id, month_key)
+    month_key = await self.month_key_parser(month if month else f"{date.today().year}-{date.today().month:02d}")
+    
+    proposals = await get_user_proposals(interaction.user.id, month_key)
 
     if not proposals:
       embed = info_embed(
@@ -119,7 +105,7 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
           ]
       )
     
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.followup.send(embed=embed, ephemeral=True)
     
   @app_commands.command(
     name='view_all',
@@ -130,7 +116,7 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
   async def boost_proposals(self, interaction: discord.Interaction, month: str = None):
     month_key = await self.month_key_parser(month)
 
-    proposals = get_month_proposals(month_key)
+    proposals = await get_month_proposals(month_key)
     
     if not proposals:
       embed = info_embed(
@@ -153,49 +139,6 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
       embed.set_footer(text = f"提案總數：{len(proposals)}")
       
     await interaction.response.send_message(embed=embed, ephemeral=True)
-    
-  @app_commands.command(
-    name='withdraw',
-    description='撤回本月或下月的加成日提案。'
-  )
-  @app_commands.rename(target_date="日期")
-  @app_commands.describe(
-    target_date="欲撤回的日期，格式為 YYYY-MM-DD",
-  )
-  async def withdraw_proposal(self, interaction: discord.Interaction, target_date: str):
-    parsed = parse_iso_date(target_date)
-
-    if parsed is None:
-      raise boost_day_exceptions.InvalidDateFormatException()
-
-    month_key = f"{parsed.year}-{parsed.month:02d}"
-
-    today = date.today()
-    next_m = next_month(today)
-    allowed_keys = {
-      f"{today.year}-{today.month:02d}",
-      f"{next_m.year}-{next_m.month:02d}"
-    }
-
-    if month_key not in allowed_keys:
-      raise boost_day_exceptions.MonthOutOfRangeException()
-
-    deleted = remove_proposal(interaction.user.id, parsed, month_key)
-
-    if not deleted:
-      raise boost_day_exceptions.ProposalNotFoundException()
-
-    logger.info("User %s withdrew boost day proposal %s", interaction.user.id, parsed.isoformat())
-
-    embed = info_embed(
-      title="✅ 已撤回加成日提案",
-      description=f"已移除您在 {month_key} 的提案：{parsed.isoformat()}。",
-      color=discord.Color.green()
-    )
-
-    await interaction.response.send_message(embed=embed, ephemeral=True)
-
-
 
 async def add(bot: commands.Bot):
   await bot.add_cog(BoostDayCog(bot))

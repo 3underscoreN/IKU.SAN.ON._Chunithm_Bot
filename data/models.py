@@ -9,7 +9,6 @@ class BoostDayProposal:
     target_date: date
     month_key: str  # Format: "YYYY-MM"
     created_at: datetime
-    updated_at: datetime
     id: int = None
 
 # @dataclass
@@ -22,13 +21,13 @@ class BoostDayProposal:
 #     id: int = None
 
 
-@dataclass
-class BoostDayState:
-    """Tracks the state of a boost day month."""
-    month_key: str  # Format: "YYYY-MM"
-    status: str  # 'open', 'voting', 'closed'
-    created_at: datetime
-    updated_at: datetime
-    winning_date: date = None
-    id: int = None
+# @dataclass
+# class BoostDayState:
+#     """Tracks the state of a boost day month."""
+#     month_key: str  # Format: "YYYY-MM"
+#     status: str  # 'open', 'voting', 'closed'
+#     created_at: datetime
+#     updated_at: datetime
+#     winning_date: date = None
+#     id: int = None
     

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 
 def next_month(ref: date) -> date:
@@ -12,6 +12,13 @@ def parse_iso_date(date_str: str) -> date | None:
     """Parse ISO format date string (YYYY-MM-DD). Return None if invalid."""
     try:
         return date.fromisoformat(date_str)
+    except ValueError:
+        return None
+    
+def parse_iso_datetime(datetime_str: str) -> datetime | None:
+    """Parse ISO format datetime string (YYYY-MM-DDTHH:MM:SSZ). Return None if invalid."""
+    try:
+        return datetime.fromisoformat(datetime_str)
     except ValueError:
         return None
 

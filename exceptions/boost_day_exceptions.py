@@ -50,3 +50,7 @@ class ProposalNotFoundException(BoostDayError):
 class DuplicateProposalException(BoostDayError):
     details = "Duplicate proposal"
     message = "您已經為該日期提出過加成日提案，無法重複提案相同日期。"
+
+class TokenFetchException(BoostDayError):
+    details = "Failed to fetch token"
+    message = "無法從網頁服務獲取token。請稍後再試。"

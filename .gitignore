@@ -5,7 +5,7 @@
 *_state.json
 
 # .env
-.env
+.env*
 
 # Python cache
 __pycache__/
