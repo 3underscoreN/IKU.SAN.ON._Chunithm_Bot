@@ -10,7 +10,7 @@ from data.models import BoostDayProposal
 logger = logging.getLogger(__name__)
 
 cfg = dotenv_values(".env")
-WEB_API_URL_BASE = f"{cfg.get("WEB_URL_BASE", "http://host.docker.internal:3000")}/api/v1"
+WEB_API_URL_BASE = f"{cfg.get("WEB_API_URL_BASE", "http://host.docker.internal:3000/api/v1")}"
 
 # def add_proposal(user_id: int, target_date: date, month_key: str) -> BoostDayProposal:
 #     """Add a user's boost day proposal for a month (allows multiple per user, no exact duplicates)."""
