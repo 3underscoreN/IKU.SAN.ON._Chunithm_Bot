@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 async def get_token(userid: str) -> str | None:
     """Fetch an authentication token for a given user ID, or None if the request fails."""
-    print(userid)
     response = requests.post(f"{WEB_API_URL_BASE}/internal/auth/tokengen", json={"userId": userid})
 
     if response.status_code != 200:
