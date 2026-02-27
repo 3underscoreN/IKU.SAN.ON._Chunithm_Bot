@@ -6,6 +6,7 @@ from datetime import date
 
 from utils.date_utils import parse_iso_date, next_month, is_month_key_format
 from utils.embed import error_embed, info_embed
+from utils.calendar_utils import render_calendar
 
 from services.web_auth_service import get_token
 from services.boost_day_service import get_user_proposals, get_month_proposals
@@ -93,15 +94,16 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
         color=discord.Color.blue()
       )
     else:
-      proposal_list = "\n".join([
-        f"• **{p.target_date.isoformat()}** （於 <t:{int(p.created_at.timestamp())}:f> 提交）"
-        for p in sorted(proposals, key=lambda x: x.target_date)
-      ])
+      year, month = map(int, month_key.split('-'))
+      highlight_days = [p.target_date.day for p in proposals]
+      cal = render_calendar(year, month, highlight_days)
+
       embed = info_embed(
           title=f"你的加成日提案：{month_key}",
+          description=cal,
           color=discord.Color.blue(),
           fields=[
-            ("提案列表", proposal_list, False)
+            ("圖例", f'藍色為你已提案的日期。', False)
           ]
       )
     
