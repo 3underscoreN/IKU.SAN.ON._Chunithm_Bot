@@ -58,7 +58,3 @@ def generate_calendar(year: int, month: int, marked_days: set[int]) -> io.BytesI
     buffer.seek(0)
     return buffer
 
-if __name__ == "__main__":
-    img_data = generate_calendar(2025, 3, {x for x in range(1, 32) if x % 2 == 0})
-    with open("test_calendar.png", "wb") as f:
-        f.write(img_data.getbuffer())
