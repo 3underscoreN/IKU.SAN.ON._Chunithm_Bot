@@ -3,3 +3,4 @@ python-dotenv
 playwright
 bs4
 requests
+pillow
