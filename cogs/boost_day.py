@@ -6,7 +6,7 @@ from datetime import date
 
 from utils.date_utils import parse_iso_date, next_month, is_month_key_format
 from utils.embed import error_embed, info_embed
-from utils.calendar_image_utils import generate_calendar
+from utils.calendar_image_utils import generate_self_calendar
 
 from services.web_auth_service import get_token
 from services.boost_day_service import get_user_proposals, get_month_proposals
@@ -99,7 +99,7 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
     year, month = map(int, month_key.split('-'))
     highlight_days = [p.target_date.day for p in proposals]
 
-    calendar_png = generate_calendar(year, month, set(highlight_days))
+    calendar_png = generate_self_calendar(year, month, set(highlight_days))
     calendar_file = discord.File(calendar_png, filename="calendar.png")
 
     embed = info_embed(

@@ -3,9 +3,11 @@ from PIL import Image, ImageDraw, ImageFont
 
 import io
 
+from typing import Mapping
+
 font = ImageFont.truetype("assets/GoogleSans.ttf", 32)
 
-def generate_calendar(year: int, month: int, marked_days: set[int]) -> io.BytesIO:
+def generate_self_calendar(year: int, month: int, marked_days: set[int]) -> io.BytesIO:
     """Generate a calendar image for the specified year and month, marking the specified days."""
     global font
     cell = 120
@@ -50,11 +52,8 @@ def generate_calendar(year: int, month: int, marked_days: set[int]) -> io.BytesI
 
             draw.text((x1 + 10 + border_width // 2, y1 + 10 + border_width // 2), str(day), fill=text_color, font=font)
             
-            # circle mark for specified days
-            
 
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer
-
