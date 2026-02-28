@@ -6,7 +6,7 @@ from datetime import date
 
 from utils.date_utils import parse_iso_date, next_month, is_month_key_format
 from utils.embed import error_embed, info_embed
-from utils.calendar_utils import render_calendar
+from utils.calendar_image_utils import generate_calendar
 
 from services.web_auth_service import get_token
 from services.boost_day_service import get_user_proposals, get_month_proposals
@@ -93,21 +93,22 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
         description=f"您在 {month_key} 沒有任何加成日提案。",
         color=discord.Color.blue()
       )
-    else:
-      year, month = map(int, month_key.split('-'))
-      highlight_days = [p.target_date.day for p in proposals]
-      cal = render_calendar(year, month, highlight_days)
+      await interaction.followup.send(embed=embed, ephemeral=True)
+      return
 
-      embed = info_embed(
-          title=f"你的加成日提案：{month_key}",
-          description=cal,
-          color=discord.Color.blue(),
-          fields=[
-            ("圖例", f'藍色為你已提案的日期。', False)
-          ]
-      )
-    
-    await interaction.followup.send(embed=embed, ephemeral=True)
+    year, month = map(int, month_key.split('-'))
+    highlight_days = [p.target_date.day for p in proposals]
+
+    calendar_png = generate_calendar(year, month, set(highlight_days))
+    calendar_file = discord.File(calendar_png, filename="calendar.png")
+
+    embed = info_embed(
+        title=f"你的加成日提案：{month_key}",
+        description=f"請查看以下日曆圖。\n藍色框選的日期為你已提案的日期。",
+    )
+    embed.set_image(url=f"attachment://{calendar_file.filename}")
+  
+    await interaction.followup.send(embed=embed, file=calendar_file, ephemeral=True)
     
   @app_commands.command(
     name='view_all',
