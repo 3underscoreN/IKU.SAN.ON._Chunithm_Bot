@@ -6,7 +6,7 @@ from datetime import date
 
 from utils.date_utils import parse_iso_date, next_month, is_month_key_format
 from utils.embed import error_embed, info_embed
-from utils.calendar_image_utils import generate_self_calendar
+from utils.calendar_image_utils import generate_self_calendar, generate_all_calendar
 
 from services.web_auth_service import get_token
 from services.boost_day_service import get_user_proposals, get_month_proposals
@@ -128,20 +128,27 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
         color=discord.Color.blue()
       )
     else:
-      # Build a list of all proposals
-      proposal_list = "\n".join([
-        f"• **{p.target_date.isoformat()}** (提出者: <@{p.user_id}>)"
-        for p in sorted(proposals, key = lambda x: x.target_date)
-      ])
-      
+      count_of_days = {}
+      for p in proposals:
+        day = p.target_date.day
+        count_of_days[day] = count_of_days.get(day, 0) + 1
+
+      year, month = map(int, month_key.split('-'))
+      calendar_png = generate_all_calendar(year, month, count_of_days)
+      calendar_file = discord.File(calendar_png, filename="calendar.png")
+
+      count_sorted_top_3 = sorted(count_of_days.items(), key=lambda x: x[1], reverse=True)[0:2]
+
       embed = info_embed(
-        title=f"加成日提案一覽：{month_key}",
-        description=proposal_list,
-        color=discord.Color.green()
+        title=f"{month_key} 的加成日提案統計",
+        description="請查看以下日曆圖。\n綠色越深的日期表示該日期的提案數量越多。",
+        fields=[
+          ("提案數量排名", "\n".join([f"{day}日: {count} 提案" for day, count in count_sorted_top_3]), False)
+        ]
       )
-      embed.set_footer(text = f"提案總數：{len(proposals)}")
+      embed.set_image(url=f"attachment://{calendar_file.filename}")
       
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.response.send_message(embed=embed, file=calendar_file, ephemeral=True)
 
 async def add(bot: commands.Bot):
   await bot.add_cog(BoostDayCog(bot))
