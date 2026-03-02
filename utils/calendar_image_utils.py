@@ -105,7 +105,7 @@ def generate_self_calendar(year: int, month: int, marked_days: set[int]) -> io.B
 
             draw.rectangle([x1, y1, x2, y2], outline=border_color, width=border_width)
 
-            draw.text((x1 + 10 + border_width // 2, y1 + 10 + border_width // 2), str(day), fill=text_color, font=font)
+            draw.text((x1 + 10, y1 + 10), str(day), fill=text_color, font=font)
             
 
     buffer = io.BytesIO()
@@ -172,12 +172,12 @@ def generate_all_calendar(year: int, month: int, count_of_days: Mapping[int, int
 
             draw.rectangle([x1, y1, x2, y2], outline=border_color, width=border_width) # border
 
-            draw.text((x1 + 10 + border_width // 2, y1 + 10 + border_width // 2), str(day), fill=this_text_color, font=font) # calendar day number
+            draw.text((x1 + 10 + border_width, y1 + 10 + border_width), str(day), fill=this_text_color, font=font) # calendar day number
 
             if count > 0 and count in count_values_sorted[:2]: # top 2 counts get the win image
-                img.paste(win_image, (x1 + cell - 48 - border_width // 2, y1 + cell - 48 - border_width // 2), win_image) # win image for max count
+                img.paste(win_image, (x1 + cell - 48, y1 + cell - 48), win_image) # win image for max count
 
-            draw.text((x1 + cell - 32 - border_width // 2, y1 + cell - 48 - 16 - border_width // 2), f"{str(count)}", fill=this_text_color, font=font_count) # count text
+            draw.text((x1 + cell - 48 + 16, y1 + cell - 48 - 16), f"{str(count)}", fill=this_text_color, font=font_count) # count text
 
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
