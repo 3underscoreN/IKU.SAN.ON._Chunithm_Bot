@@ -5,7 +5,8 @@
 *_state.json
 
 # .env
-.env*
+.env
+.env.prod
 
 # Python cache
 __pycache__/
