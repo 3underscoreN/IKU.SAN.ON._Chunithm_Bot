@@ -8,6 +8,8 @@ from typing import Mapping
 import math
 
 font = ImageFont.truetype("assets/GoogleSans.ttf", 32)
+font_count = ImageFont.truetype("assets/GoogleSans.ttf", 22)
+win_image = Image.open("assets/chiiwawa_think.webp").resize((48, 48))
 cell = 120
 padding = 40
 header_height = 40
@@ -28,7 +30,7 @@ text_color_on_max = (23, 23, 23) # dark text color for better contrast on max co
 cal = calendar.Calendar(firstweekday=0)
 weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 
-def powernorm(value: float, max: float, gamma: float = 0.5) -> float:
+def powernorm(value: float, min: float, max: float, gamma: float = 0.5) -> float:
   """
   Normalize a value using a power function.
 
@@ -41,7 +43,7 @@ def powernorm(value: float, max: float, gamma: float = 0.5) -> float:
     raise ValueError("Gamma must be in the range (0, 1]")
   if max == 0:
     return 0
-  normalized = value / max
+  normalized = (value - min) / (max - min)
   return math.pow(normalized, gamma)
 
 def colornorm(min_color: tuple[int], max_color: tuple[int], multiplier: float) -> tuple[int]:
@@ -54,8 +56,10 @@ def colornorm(min_color: tuple[int], max_color: tuple[int], multiplier: float) -
   @param multiplier: A multiplier to adjust the normalized value.
   @return: The normalized color intensity as an integer between 0 and 255.
   """
-  if multiplier <= 0 or multiplier > 1:
+  if multiplier < 0 or multiplier > 1:
     raise ValueError("Multiplier must be in the range (0, 1]")
+  if multiplier == 0:
+    return min_color
   
   return tuple(int(min_c + (max_c - min_c) * multiplier) for min_c, max_c in zip(min_color, max_color))
 
@@ -133,8 +137,11 @@ def generate_all_calendar(year: int, month: int, count_of_days: Mapping[int, int
     width = cell * 7 + padding * 2
     height = cell * len(month_days) + padding * 2 + header_height
 
-    max_count = max(count_of_days.values())
-    count_of_days_norm = {day: powernorm(count, max_count) for day, count in count_of_days.items()}
+    count_values_sorted = sorted(count_of_days.values(), reverse=True)
+
+    min_count = min(count_of_days.values())
+    max_count = count_values_sorted[0]
+    count_of_days_norm = {day: powernorm(count, min_count, max_count, 0.3) for day, count in count_of_days.items()}
 
     img = Image.new("RGB", (width, height), bg_color)
     draw = ImageDraw.Draw(img)
@@ -157,16 +164,56 @@ def generate_all_calendar(year: int, month: int, count_of_days: Mapping[int, int
             count = count_of_days[day]
             this_text_color = text_color
             if count > 0:
+                # normalize the count to a value between 0 and 1 using powernorm, then get the corresponding color intensity using colornorm
                 color_intensity = count_of_days_norm[day]
                 color = colornorm(min_color, max_color, color_intensity)
                 this_text_color = text_color_on_max if color_intensity > 0.7 else text_color
                 draw.rectangle([x1, y1, x2, y2], fill=color)
 
-            draw.rectangle([x1, y1, x2, y2], outline=border_color, width=border_width)
+            draw.rectangle([x1, y1, x2, y2], outline=border_color, width=border_width) # border
 
-            draw.text((x1 + 10 + border_width // 2, y1 + 10 + border_width // 2), str(day), fill=this_text_color, font=font)
+            draw.text((x1 + 10 + border_width // 2, y1 + 10 + border_width // 2), str(day), fill=this_text_color, font=font) # calendar day number
+
+            if count > 0 and count in count_values_sorted[:2]: # top 2 counts get the win image
+                img.paste(win_image, (x1 + cell - 48 - border_width // 2, y1 + cell - 48 - border_width // 2), win_image) # win image for max count
+
+            draw.text((x1 + 2 * cell // 3 + border_width // 2, y1 + 20 + border_width // 2), f"{str(count)}", fill=this_text_color, font=font_count) # count text
 
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer
+
+if __name__ == "__main__":
+    year, month = 2026, 3
+    # test all_calendar
+    import random
+    random.seed(42)
+
+    # test case 1: clustered counts
+    count_of_days1 = {i : random.randint(4, 6) for i in range(1, 32)}
+
+    # test case 2: sparsed counts
+    count_of_days2 = {i: random.randint(0, 20) for i in range(1, 32)}
+
+    # test case 3: all zero counts
+    count_of_days3 = {i: 0 for i in range(1, 32)}
+
+    # test case 4: outliers
+    count_of_days4 = {i: random.randint(0, 5) for i in range(1, 32)}
+    count_of_days4[5] = 50
+    count_of_days4[15] = 30
+
+    buffer1 = generate_all_calendar(year, month, count_of_days1)
+    buffer2 = generate_all_calendar(year, month, count_of_days2)
+    buffer3 = generate_all_calendar(year, month, count_of_days3)
+    buffer4 = generate_all_calendar(year, month, count_of_days4)
+
+    with open("test_calendar1.png", "wb") as f:
+        f.write(buffer1.getbuffer())
+    with open("test_calendar2.png", "wb") as f:
+        f.write(buffer2.getbuffer())
+    with open("test_calendar3.png", "wb") as f:
+        f.write(buffer3.getbuffer())
+    with open("test_calendar4.png", "wb") as f:
+        f.write(buffer4.getbuffer())
