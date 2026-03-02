@@ -177,7 +177,7 @@ def generate_all_calendar(year: int, month: int, count_of_days: Mapping[int, int
             if count > 0 and count in count_values_sorted[:2]: # top 2 counts get the win image
                 img.paste(win_image, (x1 + cell - 48 - border_width // 2, y1 + cell - 48 - border_width // 2), win_image) # win image for max count
 
-            draw.text((x1 + 2 * cell // 3 + border_width // 2, y1 + 20 + border_width // 2), f"{str(count)}", fill=this_text_color, font=font_count) # count text
+            draw.text((x1 + cell - 32 - border_width // 2, y1 + cell - 48 - 16 - border_width // 2), f"{str(count)}", fill=this_text_color, font=font_count) # count text
 
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
