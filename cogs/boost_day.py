@@ -143,7 +143,7 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
         title=f"{month_key} 的加成日提案統計",
         description="請查看以下日曆圖。\n綠色越深的日期表示該日期的提案數量越多。",
         fields=[
-          ("説明", "日曆圖中綠色越亮的日期表示該日期的提案數量越多。\n日曆中右上方的數字表示該日期的提案數量。\n帶有吉娃娃圖標的日期表示該日期的提案數量在本月排名前2。", False),
+          ("説明", "日曆圖中綠色越亮的日期表示該日期的提案數量越多。\n\n日曆中右方的數字表示該日期的提案數量。\n\n帶有吉娃娃圖標的日期表示該日期的提案數量在本月排名前二。", False),
         ]
       )
       embed.set_image(url=f"attachment://{calendar_file.filename}")
