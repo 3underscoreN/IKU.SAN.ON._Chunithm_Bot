@@ -108,6 +108,8 @@ def generate_self_calendar(year: int, month: int, marked_days: set[int]) -> io.B
 
             draw.text((x1 + 10, y1 + 10), str(day), fill=text_color, font=font)
             
+    generated_at = datetime.datetime.now(tz=datetime.timezone(offset=datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+    draw.text((width - padding - len(generated_at) * 14, height - padding - 10), generated_at, fill=text_color, font=font)
 
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
