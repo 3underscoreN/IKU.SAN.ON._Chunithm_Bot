@@ -19,7 +19,6 @@ from dotenv import dotenv_values
 
 WEB_URL_BASE = f"{dotenv_values('.env').get('WEB_URL_BASE', 'http://localhost:3000')}"
 
-CUT_OFF_DAY = 15  # Mid-month cutoff for current-month proposals.
 logger = logging.getLogger(__name__)
 
 class BoostDayCog(commands.GroupCog, name='boostday'):
