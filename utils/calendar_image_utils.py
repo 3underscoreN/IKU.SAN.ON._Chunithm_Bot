@@ -1,5 +1,6 @@
 import calendar
-from PIL import Image, ImageDraw, ImageFont    
+from PIL import Image, ImageDraw, ImageFont
+import datetime    
 
 import io
 
@@ -178,6 +179,10 @@ def generate_all_calendar(year: int, month: int, count_of_days: Mapping[int, int
                 img.paste(win_image, (x1 + cell - 48, y1 + cell - 48), win_image) # win image for max count
 
             draw.text((x1 + cell - 48 + 16, y1 + cell - 48 - 16), f"{str(count)}", fill=this_text_color, font=font_count) # count text
+
+    # TODO: Add generated at at bottom right
+    generated_at = datetime.datetime.now(tz=datetime.timezone(offset=datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+    draw.text((width - padding - len(generated_at) * 14, height - padding - 10), generated_at, fill=text_color, font=font)
 
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
