@@ -109,7 +109,7 @@ def generate_self_calendar(year: int, month: int, marked_days: set[int]) -> io.B
             draw.text((x1 + 10, y1 + 10), str(day), fill=text_color, font=font)
             
     generated_at = datetime.datetime.now(tz=datetime.timezone(offset=datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-    draw.text((width - padding - len(generated_at) * 14, height - padding - 10), generated_at, fill=text_color, font=font)
+    draw.text((width - padding - len(generated_at) * 14, height - padding - 10), generated_at, fill=text_color, font=font_count)
 
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
@@ -184,7 +184,7 @@ def generate_all_calendar(year: int, month: int, count_of_days: Mapping[int, int
 
     # TODO: Add generated at at bottom right
     generated_at = datetime.datetime.now(tz=datetime.timezone(offset=datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-    draw.text((width - padding - len(generated_at) * 14, height - padding - 10), generated_at, fill=text_color, font=font)
+    draw.text((width - padding - len(generated_at) * 10, height - padding + 4), generated_at, fill=text_color, font=font_count)
 
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
