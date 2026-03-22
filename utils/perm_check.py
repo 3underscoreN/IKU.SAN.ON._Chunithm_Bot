@@ -1,6 +1,7 @@
 from data.config_store import get_all_role_permissions
 import discord
 
+from dotenv import dotenv_values
 from utils.permissions import Permission
 
 async def has_admin_like_permission(interaction: discord.Interaction) -> bool:
@@ -12,6 +13,11 @@ async def has_admin_like_permission(interaction: discord.Interaction) -> bool:
     :param interaction: The Discord interaction
     :return: True if the user can manage permissions, False otherwise
     """
+    
+    if owner := dotenv_values('.env').get('BOT_OWNER'): 
+      if owner == str(interaction.user.id):
+        return True
+
     # Check if user is in a guild
     if interaction.channel is None:
         return False
