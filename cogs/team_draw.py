@@ -9,9 +9,11 @@ import random
 from parser.team_course import get_team_course_scores
 from exceptions import team_draw_exceptions
 from utils.embed import error_embed, info_embed, warning_embed
+from data.config_store import get_config_value, set_config_value
+
+from utils.perm_check import has_admin_like_permission
 
 import datetime
-import json
 import asyncio
 
 import logging
@@ -20,7 +22,8 @@ logger = logging.getLogger("discord.bot.cogs.team_draw")
 
 from typing import Optional
 
-STATE_FILE = 'data/_team_draw_state.json'
+TD_DRAW_DATETIME_KEY = 'team_draw.td_draw_datetime'
+TD_DRAW_CHANNEL_ID_KEY = 'team_draw.td_draw_channel_id'
 
 class TeamDrawState:
   """
@@ -29,7 +32,12 @@ class TeamDrawState:
   def __init__(self):
     initial_state = self._load_state()
     datetime_string = initial_state.get('td_draw_datetime', None)
-    self._td_draw_datetime: Optional[datetime.datetime] = datetime.datetime.fromisoformat(datetime_string) if datetime_string else None
+    self._td_draw_datetime: Optional[datetime.datetime] = None
+    if datetime_string:
+      try:
+        self._td_draw_datetime = datetime.datetime.fromisoformat(datetime_string)
+      except ValueError:
+        logger.warning('Invalid persisted draw datetime in config table. Ignoring value.')
 
     if self._td_draw_datetime and self._td_draw_datetime < datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))):
       self._td_draw_datetime = None
@@ -66,18 +74,28 @@ class TeamDrawState:
     return self._td_draw_channel_id
 
   def _load_state(self):
-    try:
-      with open(STATE_FILE, 'r') as f:
-        return json.load(f)
-    except FileNotFoundError:
-      return {}
+    raw_channel_id = get_config_value(TD_DRAW_CHANNEL_ID_KEY)
+    channel_id = None
+    if raw_channel_id:
+      try:
+        channel_id = int(raw_channel_id)
+      except ValueError:
+        logger.warning('Invalid persisted draw channel id in config table. Ignoring value.')
+
+    return {
+      'td_draw_datetime': get_config_value(TD_DRAW_DATETIME_KEY),
+      'td_draw_channel_id': channel_id,
+    }
 
   def _save_state(self):
-    with open(STATE_FILE, 'w') as f:
-      json.dump({
-        'td_draw_datetime': self._td_draw_datetime.isoformat() if self._td_draw_datetime else None,
-        'td_draw_channel_id': self._td_draw_channel_id 
-      }, f)
+    set_config_value(
+      TD_DRAW_DATETIME_KEY,
+      self._td_draw_datetime.isoformat() if self._td_draw_datetime else None,
+    )
+    set_config_value(
+      TD_DRAW_CHANNEL_ID_KEY,
+      str(self._td_draw_channel_id) if self._td_draw_channel_id is not None else None,
+    )
 
 class TeamDrawCog(commands.GroupCog, name='teamdraw'):
   state = TeamDrawState()
@@ -153,6 +171,7 @@ class TeamDrawCog(commands.GroupCog, name='teamdraw'):
     
   @app_commands.command(name="set_draw_time", description="設定團隊抽選的時間(UTC+8)。只有設定後才會進行抽選。")
   @app_commands.describe(time="時間格式為YYYY-MM-DDTHH:MM:SS+08:00, 例如2024-12-31T15:00:00+08:00")
+  @app_commands.check(has_admin_like_permission)
   async def set_draw_time(self, interaction: discord.Interaction, time: str):
     date_re = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+08:00$'
     if not re.match(date_re, time):
@@ -172,6 +191,7 @@ class TeamDrawCog(commands.GroupCog, name='teamdraw'):
 
   @app_commands.command(name="set_draw_channel", description="設定團隊抽選的頻道")
   @app_commands.describe(channel="設定進行團隊抽選的頻道")
+  @app_commands.check(has_admin_like_permission)
   async def set_draw_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
     try:
       msg = await channel.send("這是一則測試訊息，用以確認頻道有效性。")
@@ -188,6 +208,7 @@ class TeamDrawCog(commands.GroupCog, name='teamdraw'):
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
   @app_commands.command(name="view_settings", description="查看目前團隊抽選設定")
+  @app_commands.check(has_admin_like_permission)
   async def view_settings(self, interaction: discord.Interaction):
     draw_time_str = self.state.td_draw_datetime.strftime('%Y-%m-%d %H:%M:%S %Z') if self.state.td_draw_datetime else "未設定"
     channel_mention = f"<#{self.state.td_draw_channel_id}>" if self.state.td_draw_channel_id else "未設定"
@@ -202,6 +223,7 @@ class TeamDrawCog(commands.GroupCog, name='teamdraw'):
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
   @app_commands.command(name="cancel_draw", description="取消目前設定的團隊抽選")
+  @app_commands.check(has_admin_like_permission)
   async def cancel_draw(self, interaction: discord.Interaction):
     self.state.td_draw_datetime = None
 

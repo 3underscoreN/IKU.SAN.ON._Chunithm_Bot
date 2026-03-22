@@ -7,10 +7,11 @@ from parser.team_point import get_team_scores
 from exceptions import team_point_exceptions
 
 from utils.embed import error_embed, info_embed, warning_embed
+from data.config_store import get_config_value, set_config_value
+
+from utils.perm_check import has_admin_like_permission, has_member_permission
 
 import datetime
-
-import json
 
 import asyncio
 
@@ -20,21 +21,40 @@ logger = logging.getLogger(__name__)
 
 from typing import Optional
 
-STATE_FILE = 'data/_team_points_state.json'
+TP_MSG_CHANNEL_KEY = 'team_point.tp_msg_channel'
+TP_MSG_MSG_ID_KEY = 'team_point.tp_msg_msg_id'
 
 def _load_state():
+  channel_id_raw = get_config_value(TP_MSG_CHANNEL_KEY)
+  msg_id_raw = get_config_value(TP_MSG_MSG_ID_KEY)
+
+  channel_id = None
+  msg_id = None
+
   try:
-    with open(STATE_FILE, 'r') as f:
-      return json.load(f)
-  except FileNotFoundError:
-    return {}
+    channel_id = int(channel_id_raw) if channel_id_raw else None
+  except ValueError:
+    logger.warning("Invalid persisted team point channel id in config table. Ignoring value.")
+
+  try:
+    msg_id = int(msg_id_raw) if msg_id_raw else None
+  except ValueError:
+    logger.warning("Invalid persisted team point message id in config table. Ignoring value.")
+
+  return {
+    'tp_msg_channel': channel_id,
+    'tp_msg_msg_id': msg_id,
+  }
 
 def _save_state(tp_msg_channel_id: int | None, tp_msg_msg_id: int | None):
-  with open(STATE_FILE, 'w') as f:
-    json.dump({
-      'tp_msg_channel': tp_msg_channel_id,
-      'tp_msg_msg_id': tp_msg_msg_id
-    }, f)
+  set_config_value(
+    TP_MSG_CHANNEL_KEY,
+    str(tp_msg_channel_id) if tp_msg_channel_id is not None else None,
+  )
+  set_config_value(
+    TP_MSG_MSG_ID_KEY,
+    str(tp_msg_msg_id) if tp_msg_msg_id is not None else None,
+  )
 
 class TeamPointCog(commands.GroupCog, name='teampoint'):
   def __init__(self, bot: commands.Bot):
@@ -138,6 +158,7 @@ class TeamPointCog(commands.GroupCog, name='teampoint'):
     
     
   @app_commands.command(name='update', description='立即更新團隊積分訊息。')
+  @app_commands.check(has_admin_like_permission)
   async def update_now(self, interaction: discord.Interaction):
     """Immediately updates the team point message."""
     if not self.msg_id or not self.channel_id:
@@ -153,6 +174,7 @@ class TeamPointCog(commands.GroupCog, name='teampoint'):
   @app_commands.command(name='set_channel', description='設定或更新團隊積分訊息的位置。')
   @app_commands.rename(channel='頻道')
   @app_commands.describe(channel='要發送團隊積分訊息的頻道')
+  @app_commands.check(has_admin_like_permission)
   async def set_team_point_msg(self, interaction: discord.Interaction, channel: discord.TextChannel):
     if self.channel_id == channel.id:
       raise team_point_exceptions.SameChannelException()

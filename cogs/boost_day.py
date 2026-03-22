@@ -8,6 +8,8 @@ from utils.date_utils import parse_iso_date, next_month, is_month_key_format
 from utils.embed import error_embed, info_embed
 from utils.calendar_image_utils import generate_self_calendar, generate_all_calendar
 
+from utils.perm_check import has_admin_like_permission, has_member_permission
+
 from services.web_auth_service import get_token
 from services.boost_day_service import get_user_proposals, get_month_proposals
 
@@ -59,6 +61,7 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
     name='get_propose_link',
     description='獲取提案加成日鏈接。'
   )
+  @app_commands.check(has_member_permission)
   async def boost_day_get_propose_link(self, interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
     token = await get_token(str(interaction.user.id))
@@ -77,6 +80,7 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
     name='view_self',
     description='查看自己在指定月份的所有加成日提案 。'
   )
+  @app_commands.check(has_member_permission)
   @app_commands.rename(month="月份")
   @app_commands.describe(month="欲查詢的月份，格式為 YYYY-MM，預設為本月")
   async def my_boost_proposals(self, interaction: discord.Interaction, month: str = None):
@@ -115,6 +119,7 @@ class BoostDayCog(commands.GroupCog, name='boostday'):
   )
   @app_commands.rename(month="月份")
   @app_commands.describe(month="欲查詢的月份，格式為 YYYY-MM，預設為本月")
+  @app_commands.check(has_member_permission)
   async def boost_proposals(self, interaction: discord.Interaction, month: str = None):
     month_key = await self.month_key_parser(month)
 

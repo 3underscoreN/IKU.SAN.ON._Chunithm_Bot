@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from cogs.boost_day import add as boost_day_setup
 from cogs.team_point import add as team_point_setup
 from cogs.team_draw import add as team_draw_setup
+from cogs.permissions import add as permissions_setup
 
 from exceptions.boost_day_exceptions import BoostDayError
 from exceptions.team_draw_exceptions import TeamDrawError
@@ -39,6 +40,7 @@ class ChunithmBot(commands.Bot):
         await boost_day_setup(self)
         await team_point_setup(self)
         await team_draw_setup(self)
+        await permissions_setup(self)
 
         # Sync application (slash) commands on startup.
         await self.tree.sync()
@@ -59,6 +61,16 @@ async def on_app_command_error(interaction: discord.Interaction, error: discord.
     """Global error handler for app commands."""
     if isinstance(error, (BoostDayError, TeamDrawError, TeamPointError)):
         return  # Handled in respective cogs
+
+    if isinstance(error, discord.app_commands.errors.CheckFailure):
+        embed = error_embed(
+            description="你貌似沒有權限使用這個指令。",
+        )
+        if not interaction.response.is_done():
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        else:
+            await interaction.edit_original_response(embed=embed, view=None)
+        return
 
     logging.error(f"Unhandled app command error: {error}", exc_info=error)
     embed = error_embed(
