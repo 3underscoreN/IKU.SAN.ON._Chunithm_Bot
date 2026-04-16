@@ -12,7 +12,6 @@ from services.web_auth_service import get_token
 from utils.calendar_image_utils import generate_all_calendar, generate_self_calendar
 from utils.date_utils import is_month_key_format, next_month, parse_iso_date
 from utils.embed import error_embed, info_embed
-from utils.perm_check import has_admin_like_permission, has_member_permission
 
 WEB_URL_BASE = f"{dotenv_values('.env').get('WEB_URL_BASE', 'http://localhost:3000')}"
 
@@ -60,7 +59,6 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
         raise error  # Propagate to global handler if unhandled.
 
     @app_commands.command(name="get_propose_link", description="獲取提案加成日鏈接。")
-    @app_commands.check(has_member_permission)
     async def boost_day_get_propose_link(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         token = await get_token(str(interaction.user.id))
@@ -80,7 +78,6 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
     @app_commands.command(
         name="view_self", description="查看自己在指定月份的所有加成日提案 。"
     )
-    @app_commands.check(has_member_permission)
     @app_commands.rename(month="月份")
     @app_commands.describe(month="欲查詢的月份，格式為 YYYY-MM，預設為本月")
     async def my_boost_proposals(
@@ -122,7 +119,6 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
     )
     @app_commands.rename(month="月份")
     @app_commands.describe(month="欲查詢的月份，格式為 YYYY-MM，預設為本月")
-    @app_commands.check(has_member_permission)
     async def boost_proposals(
         self, interaction: discord.Interaction, month: str = None
     ):
@@ -145,10 +141,6 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
             year, month = map(int, month_key.split("-"))
             calendar_png = generate_all_calendar(year, month, count_of_days)
             calendar_file = discord.File(calendar_png, filename="calendar.png")
-
-            count_sorted_top_3 = sorted(
-                count_of_days.items(), key=lambda x: x[1], reverse=True
-            )[0:2]
 
             embed = info_embed(
                 title=f"{month_key} 的加成日提案統計",

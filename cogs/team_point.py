@@ -10,7 +10,6 @@ from data.config_store import get_config_value, set_config_value
 from exceptions import team_point_exceptions
 from parser.team_point import get_team_scores
 from utils.embed import error_embed, info_embed, warning_embed
-from utils.perm_check import has_admin_like_permission, has_member_permission
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +165,6 @@ class TeamPointCog(commands.GroupCog, name="teampoint"):
         logger.info("Team points update task completed.")
 
     @app_commands.command(name="update", description="立即更新團隊積分訊息。")
-    @app_commands.check(has_admin_like_permission)
     @app_commands.default_permissions(manage_roles=True)
     async def update_now(self, interaction: discord.Interaction):
         """Immediately updates the team point message."""
@@ -186,7 +184,6 @@ class TeamPointCog(commands.GroupCog, name="teampoint"):
     )
     @app_commands.rename(channel="頻道")
     @app_commands.describe(channel="要發送團隊積分訊息的頻道")
-    @app_commands.check(has_admin_like_permission)
     @app_commands.default_permissions(manage_roles=True)
     async def set_team_point_msg(
         self, interaction: discord.Interaction, channel: discord.TextChannel
