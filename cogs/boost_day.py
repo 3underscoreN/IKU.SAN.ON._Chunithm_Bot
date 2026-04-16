@@ -15,7 +15,7 @@ from utils.embed import error_embed, info_embed
 
 WEB_URL_BASE = f"{dotenv_values('.env').get('WEB_URL_BASE', 'http://localhost:3000')}"
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("discord.bot.cogs.boost_day")
 
 
 class BoostDayCog(commands.GroupCog, name="boostday"):

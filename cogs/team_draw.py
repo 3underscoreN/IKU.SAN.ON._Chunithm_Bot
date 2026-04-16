@@ -106,7 +106,7 @@ class TeamDrawState:
             else None,
         )
 
-
+@app_commands.default_permissions(manage_roles=True)
 class TeamDrawCog(commands.GroupCog, name="teamdraw"):
     state = TeamDrawState()
 
@@ -198,7 +198,6 @@ class TeamDrawCog(commands.GroupCog, name="teamdraw"):
     @app_commands.describe(
         time="時間格式為YYYY-MM-DDTHH:MM:SS+08:00, 例如2024-12-31T15:00:00+08:00"
     )
-    @app_commands.default_permissions(manage_roles=True)
     async def set_draw_time(self, interaction: discord.Interaction, time: str):
         date_re = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+08:00$"
         if not re.match(date_re, time):
@@ -224,7 +223,6 @@ class TeamDrawCog(commands.GroupCog, name="teamdraw"):
 
     @app_commands.command(name="set_draw_channel", description="設定團隊抽選的頻道")
     @app_commands.describe(channel="設定進行團隊抽選的頻道")
-    @app_commands.default_permissions(manage_roles=True)
     async def set_draw_channel(
         self, interaction: discord.Interaction, channel: discord.TextChannel
     ):
@@ -241,7 +239,6 @@ class TeamDrawCog(commands.GroupCog, name="teamdraw"):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @app_commands.command(name="view_settings", description="查看目前團隊抽選設定")
-    @app_commands.default_permissions(manage_roles=True)
     async def view_settings(self, interaction: discord.Interaction):
         draw_time_str = (
             self.state.td_draw_datetime.strftime("%Y-%m-%d %H:%M:%S %Z")
@@ -264,7 +261,6 @@ class TeamDrawCog(commands.GroupCog, name="teamdraw"):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @app_commands.command(name="cancel_draw", description="取消目前設定的團隊抽選")
-    @app_commands.default_permissions(manage_roles=True)
     async def cancel_draw(self, interaction: discord.Interaction):
         self.state.td_draw_datetime = None
 

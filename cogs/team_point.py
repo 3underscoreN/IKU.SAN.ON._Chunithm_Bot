@@ -11,7 +11,7 @@ from exceptions import team_point_exceptions
 from parser.team_point import get_team_scores
 from utils.embed import error_embed, info_embed, warning_embed
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("discord.bot.cogs.team_point")
 
 from typing import Optional
 
@@ -56,7 +56,7 @@ def _save_state(tp_msg_channel_id: int | None, tp_msg_msg_id: int | None):
         str(tp_msg_msg_id) if tp_msg_msg_id is not None else None,
     )
 
-
+@app_commands.default_permissions(manage_roles=True)
 class TeamPointCog(commands.GroupCog, name="teampoint"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -87,14 +87,14 @@ class TeamPointCog(commands.GroupCog, name="teampoint"):
 
         message = None
         try:
-            if channel and channel.fetch_message:
+            if channel.fetch_message:
                 message = await channel.fetch_message(self.msg_id)
         except (discord.NotFound, discord.Forbidden):
             # Message not found or bot has no access
             nullify()
             raise team_point_exceptions.MessageNotFoundException()
 
-        if channel is None or message is None:
+        if message is None:
             nullify()
 
         return channel, message
