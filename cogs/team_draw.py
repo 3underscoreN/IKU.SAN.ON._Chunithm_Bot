@@ -107,7 +107,7 @@ class TeamDrawState:
         )
 
 @app_commands.default_permissions(manage_roles=True)
-class TeamDrawCog(commands.GroupCog, name="teamdraw"):
+class TeamDrawAdminCog(commands.GroupCog, name="teamdraw-admin"):
     state = TeamDrawState()
 
     def __init__(self, bot: commands.Bot):
@@ -269,5 +269,5 @@ class TeamDrawCog(commands.GroupCog, name="teamdraw"):
 
 
 async def add(bot: commands.Bot):
-    cog = TeamDrawCog(bot)
+    cog = TeamDrawAdminCog(bot)
     await bot.add_cog(cog)
