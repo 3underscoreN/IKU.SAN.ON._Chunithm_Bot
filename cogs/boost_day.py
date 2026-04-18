@@ -114,6 +114,8 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
 
         await interaction.followup.send(embed=embed, file=calendar_file, ephemeral=True)
 
+
+@app_commands.default_permissions(manage_roles=True)
 class BoostDayAdminCog(commands.GroupCog, name="boostday-admin"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -163,7 +165,6 @@ class BoostDayAdminCog(commands.GroupCog, name="boostday-admin"):
         self, interaction: discord.Interaction, month: str = None
     ):
         month_key = await self.month_key_parser(month)
-
         proposals = await get_month_proposals(month_key)
 
         if not proposals:
@@ -172,6 +173,8 @@ class BoostDayAdminCog(commands.GroupCog, name="boostday-admin"):
                 description=f"{month_key} 沒有任何加成日提案。",
                 color=discord.Color.blue(),
             )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
         else:
             count_of_days = {}
             for p in proposals:
@@ -195,9 +198,9 @@ class BoostDayAdminCog(commands.GroupCog, name="boostday-admin"):
             )
             embed.set_image(url=f"attachment://{calendar_file.filename}")
 
-        await interaction.response.send_message(
-            embed=embed, file=calendar_file, ephemeral=True
-        )
+            await interaction.response.send_message(
+                embed=embed, file=calendar_file, ephemeral=True
+            )
 
 async def add(bot: commands.Bot):
     await bot.add_cog(BoostDayCog(bot))
