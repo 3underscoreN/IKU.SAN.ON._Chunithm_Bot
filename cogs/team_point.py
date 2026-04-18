@@ -57,7 +57,7 @@ def _save_state(tp_msg_channel_id: int | None, tp_msg_msg_id: int | None):
     )
 
 @app_commands.default_permissions(manage_roles=True)
-class TeamPointCog(commands.GroupCog, name="teampoint"):
+class TeamPointAdminCog(commands.GroupCog, name="teampoint-admin"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -264,5 +264,5 @@ class TeamPointCog(commands.GroupCog, name="teampoint"):
 
 
 async def add(bot: commands.Bot):
-    cog = TeamPointCog(bot)
+    cog = TeamPointAdminCog(bot)
     await bot.add_cog(cog)

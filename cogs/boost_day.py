@@ -114,6 +114,48 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
 
         await interaction.followup.send(embed=embed, file=calendar_file, ephemeral=True)
 
+
+@app_commands.default_permissions(manage_roles=True)
+class BoostDayAdminCog(commands.GroupCog, name="boostday-admin"):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    async def month_key_parser(self, month: str | None) -> str:
+        """Parse month key from input or default to current month."""
+        today = date.today()
+
+        if month is None:
+            month_key = f"{today.year}-{today.month:02d}"
+        else:
+            if not is_month_key_format(month):
+                raise boost_day_exceptions.InvalidMonthFormatException()
+            month_key = month
+
+        return month_key
+
+    async def cog_app_command_error(
+        self,
+        interaction: discord.Interaction,
+        error: discord.app_commands.AppCommandError,
+    ) -> None:
+        """Global error handler for app commands in this cog."""
+
+        if isinstance(error, boost_day_exceptions.BoostDayError):
+            embed = error_embed(
+                description=error.args[0].get(
+                    "message", "執行指令時發生錯誤，請檢查輸入並重試。"
+                )
+            )
+
+            if not interaction.response.is_done():
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            else:
+                await interaction.edit_original_response(embed=embed, view=None)
+
+            return
+
+        raise error  # Propagate to global handler if unhandled.
+
     @app_commands.command(
         name="view_all", description="查看指定月份的所有加成日提案 。"
     )
@@ -123,7 +165,6 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
         self, interaction: discord.Interaction, month: str = None
     ):
         month_key = await self.month_key_parser(month)
-
         proposals = await get_month_proposals(month_key)
 
         if not proposals:
@@ -132,6 +173,8 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
                 description=f"{month_key} 沒有任何加成日提案。",
                 color=discord.Color.blue(),
             )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
         else:
             count_of_days = {}
             for p in proposals:
@@ -155,14 +198,15 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
             )
             embed.set_image(url=f"attachment://{calendar_file.filename}")
 
-        await interaction.response.send_message(
-            embed=embed, file=calendar_file, ephemeral=True
-        )
-
+            await interaction.response.send_message(
+                embed=embed, file=calendar_file, ephemeral=True
+            )
 
 async def add(bot: commands.Bot):
     await bot.add_cog(BoostDayCog(bot))
+    await bot.add_cog(BoostDayAdminCog(bot))
 
 
 async def remove(bot: commands.Bot):
     await bot.remove_cog("BoostDayCog")
+    await bot.remove_cog("BoostDayAdminCog")
