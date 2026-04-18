@@ -1,6 +1,6 @@
 FROM python:3.14-slim-trixie
 
-RUN groupadd -r botuser && useradd -r -g botuser botuser
+RUN groupadd -r botuser && useradd -u 1000 -r -g botuser botuser
 
 WORKDIR /app
 
