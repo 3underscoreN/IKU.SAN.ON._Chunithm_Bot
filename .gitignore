@@ -6,6 +6,7 @@
 
 # .env
 .env
+.env.prod
 
 # Python cache
 __pycache__/
@@ -15,3 +16,5 @@ __pycache__/
 
 # database
 bot.db*
+
+.vscode
