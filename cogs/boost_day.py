@@ -59,7 +59,7 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
 
         raise error  # Propagate to global handler if unhandled.
 
-    @app_commands.command(name="get_propose_link", description="獲取提案加成日鏈接。")
+    @app_commands.command(name="get_propose_link", description="獲取提案加成日超連結。")
     async def boost_day_get_propose_link(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         token = await get_token(str(interaction.user.id))
@@ -69,7 +69,7 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
         propose_url = f"{WEB_URL_BASE}/input/{token}"
         embed = info_embed(
             title="加成日提案超連結",
-            description=f"點擊以下鏈接前往提案頁面：{propose_url}",
+            description=f"點擊以下超連結前往提案頁面：{propose_url}",
         )
         embed.add_field(
             name="提示", value="請在30分鐘内完成提交，否則超連結將失效。", inline=False
