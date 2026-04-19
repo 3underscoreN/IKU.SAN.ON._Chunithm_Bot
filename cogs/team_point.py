@@ -57,6 +57,8 @@ def _save_state(tp_msg_channel_id: int | None, tp_msg_msg_id: int | None):
     )
 
 @app_commands.default_permissions(manage_roles=True)
+@app_commands.guild_install()
+@app_commands.guild_only()
 class TeamPointAdminCog(commands.GroupCog, name="teampoint-admin"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot

@@ -17,7 +17,8 @@ WEB_URL_BASE = f"{dotenv_values('.env').get('WEB_URL_BASE', 'http://localhost:30
 
 logger = logging.getLogger("discord.bot.cogs.boost_day")
 
-
+@app_commands.guild_install()
+@app_commands.guild_only()
 class BoostDayCog(commands.GroupCog, name="boostday"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -116,6 +117,8 @@ class BoostDayCog(commands.GroupCog, name="boostday"):
 
 
 @app_commands.default_permissions(manage_roles=True)
+@app_commands.guild_install()
+@app_commands.guild_only()
 class BoostDayAdminCog(commands.GroupCog, name="boostday-admin"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
