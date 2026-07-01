@@ -1,0 +1,15 @@
+services:
+  bot:
+    build: .
+    container_name: IKUSANON-bot
+    env_file: .env
+    restart: unless-stopped
+    init: true
+    volumes:
+      - ./data/bot.db:/app/data/bot.db
+    networks:
+      - webbot_network
+
+networks:
+  webbot_network:
+    external: true
